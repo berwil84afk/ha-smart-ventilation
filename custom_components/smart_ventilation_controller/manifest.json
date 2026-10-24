@@ -5,9 +5,9 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/berwil84afk/ha-smart-ventilation",
-  "integration_type": "helper",
+  "integration_type": "device",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/berwil84afk/ha-smart-ventilation/issues",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
