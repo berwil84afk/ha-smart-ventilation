@@ -104,7 +104,7 @@ Die Schwellwerte sind eigene Entitäten des Geräts und lassen sich jederzeit im
 | Einschalt-Puffer | 2,5 g/m³ | So viel mehr Wasser muss die Raumluft enthalten, damit der Lüfter einschaltet |
 | Ausschalt-Puffer | 1,0 g/m³ | Fällt die Differenz darunter, schaltet der Lüfter wieder aus |
 | Taupunkt-Sicherheitsabstand | 2 °C | So weit muss der Taupunkt außen unter der Wandtemperatur liegen |
-| Mindestfeuchte innen | 65 % | Darunter wird nicht gelüftet |
+| Mindestfeuchte innen | 55 % | Darunter wird nicht gelüftet |
 
 ### Optionen (über „Konfigurieren“)
 
