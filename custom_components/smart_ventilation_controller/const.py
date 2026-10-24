@@ -2,6 +2,13 @@
 
 DOMAIN = "smart_ventilation_controller"
 
+try:
+    from homeassistant.const import UnitOfDensity
+
+    UNIT_ABSOLUTE_HUMIDITY = UnitOfDensity.GRAMS_PER_CUBIC_METER
+except (ImportError, AttributeError):  # Home Assistant vor Einführung von UnitOfDensity
+    UNIT_ABSOLUTE_HUMIDITY = "g/m³"
+
 # Einrichtung (entry.data)
 CONF_INDOOR_TEMP = "indoor_temperature"
 CONF_INDOOR_HUM = "indoor_humidity"

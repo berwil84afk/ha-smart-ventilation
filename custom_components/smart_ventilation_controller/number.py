@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription, NumberMode
 from homeassistant.const import (
-    CONCENTRATION_GRAMS_PER_CUBIC_METER,
     PERCENTAGE,
     EntityCategory,
     UnitOfTemperature,
@@ -13,7 +12,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import NUM_BUFFER_OFF, NUM_BUFFER_ON, NUM_DEWPOINT_MARGIN, NUM_MIN_HUMIDITY
+from .const import (
+    NUM_BUFFER_OFF,
+    NUM_BUFFER_ON,
+    NUM_DEWPOINT_MARGIN,
+    NUM_MIN_HUMIDITY,
+    UNIT_ABSOLUTE_HUMIDITY,
+)
 from .controller import SmartVentilationConfigEntry
 from .entity import SmartVentilationEntity
 
@@ -25,7 +30,7 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
         native_min_value=0,
         native_max_value=10,
         native_step=0.1,
-        native_unit_of_measurement=CONCENTRATION_GRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=UNIT_ABSOLUTE_HUMIDITY,
         mode=NumberMode.BOX,
         entity_category=EntityCategory.CONFIG,
     ),
@@ -36,7 +41,7 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
         native_min_value=0,
         native_max_value=10,
         native_step=0.1,
-        native_unit_of_measurement=CONCENTRATION_GRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=UNIT_ABSOLUTE_HUMIDITY,
         mode=NumberMode.BOX,
         entity_category=EntityCategory.CONFIG,
     ),

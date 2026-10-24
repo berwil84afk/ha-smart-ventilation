@@ -14,7 +14,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CONCENTRATION_GRAMS_PER_CUBIC_METER,
     UnitOfTemperature,
     UnitOfTime,
 )
@@ -22,6 +21,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
+from .const import UNIT_ABSOLUTE_HUMIDITY
 from .controller import SmartVentilationConfigEntry, SmartVentilationController
 from .entity import SmartVentilationEntity
 
@@ -41,7 +41,7 @@ def _ah(key: str, name: str, attr: str, icon: str) -> SmartVentilationSensorDesc
         key=key,
         name=name,
         icon=icon,
-        native_unit_of_measurement=CONCENTRATION_GRAMS_PER_CUBIC_METER,
+        native_unit_of_measurement=UNIT_ABSOLUTE_HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
         value_fn=_reading(attr),
