@@ -1,0 +1,75 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Smart ventilation controller einrichten",
+        "description": "Sensoren und Lüfter auswählen. Schwellwerte, Laufzeiten, Nachtruhe und Benachrichtigungen stellst du danach unter „Konfigurieren“ ein.",
+        "data": {
+          "name": "Name",
+          "indoor_temperature": "Temperatur innen",
+          "indoor_humidity": "Relative Feuchte innen",
+          "outdoor_temperature": "Temperatur außen",
+          "outdoor_humidity": "Relative Feuchte außen",
+          "wall_temperature": "Wandtemperatur (optional)",
+          "fan_entity": "Lüfter"
+        },
+        "data_description": {
+          "wall_temperature": "Für den Kondensationsschutz. Ohne Angabe wird die Innentemperatur verwendet.",
+          "fan_entity": "Schalter, Ventilator, Licht oder Input-Boolean, der den Lüfter schaltet."
+        }
+      },
+      "reconfigure": {
+        "title": "Sensoren und Lüfter ändern",
+        "data": {
+          "indoor_temperature": "Temperatur innen",
+          "indoor_humidity": "Relative Feuchte innen",
+          "outdoor_temperature": "Temperatur außen",
+          "outdoor_humidity": "Relative Feuchte außen",
+          "wall_temperature": "Wandtemperatur (optional)",
+          "fan_entity": "Lüfter"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Dieser Lüfter wird bereits von einem Smart ventilation controller gesteuert.",
+      "reconfigure_successful": "Die Konfiguration wurde aktualisiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Smart ventilation controller – Optionen",
+        "description": "Die Schwellwerte (Puffer, Taupunkt-Abstand, Mindestfeuchte) stellst du direkt an den Entitäten des Geräts ein.",
+        "data": {
+          "max_runtime": "Maximale Laufzeit am Stück",
+          "pause_duration": "Zwangspause nach Maximallaufzeit",
+          "night_enabled": "Nachtruhe aktivieren",
+          "night_start": "Nachtruhe von",
+          "night_end": "Nachtruhe bis",
+          "notify_entities": "Benachrichtigen über Notify-Entitäten",
+          "notify_services": "Benachrichtigen über Notify-Dienste",
+          "notify_events": "Benachrichtigen bei"
+        },
+        "data_description": {
+          "max_runtime": "0 = unbegrenzt.",
+          "pause_duration": "0 = keine Pause, der Lüfter darf sofort wieder einschalten.",
+          "night_enabled": "Während der Nachtruhe wird der Lüfter ausgeschaltet und nicht eingeschaltet.",
+          "night_end": "Darf vor dem Beginn liegen (Zeitraum über Mitternacht, z. B. 22:00–06:00).",
+          "notify_entities": "Z. B. Telegram-Bot-Entitäten (notify.telegram_bot_…).",
+          "notify_services": "Klassische Dienste wie mobile_app_handy."
+        }
+      }
+    }
+  },
+  "selector": {
+    "notify_events": {
+      "options": {
+        "turn_on": "Lüfter eingeschaltet",
+        "turn_off": "Lüfter ausgeschaltet",
+        "pause": "Zwangspause gestartet",
+        "night": "Abschaltung wegen Nachtruhe",
+        "condensation": "Lüften wegen Kondensationsgefahr verhindert"
+      }
+    }
+  }
+}

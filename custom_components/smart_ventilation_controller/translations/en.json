@@ -1,0 +1,75 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Smart ventilation controller",
+        "description": "Select sensors and fan. Thresholds, runtimes, quiet hours and notifications are set afterwards under \"Configure\".",
+        "data": {
+          "name": "Name",
+          "indoor_temperature": "Indoor temperature",
+          "indoor_humidity": "Indoor relative humidity",
+          "outdoor_temperature": "Outdoor temperature",
+          "outdoor_humidity": "Outdoor relative humidity",
+          "wall_temperature": "Wall temperature (optional)",
+          "fan_entity": "Fan"
+        },
+        "data_description": {
+          "wall_temperature": "Used for condensation protection. Falls back to the indoor temperature.",
+          "fan_entity": "Switch, fan, light or input boolean that controls the fan."
+        }
+      },
+      "reconfigure": {
+        "title": "Change sensors and fan",
+        "data": {
+          "indoor_temperature": "Indoor temperature",
+          "indoor_humidity": "Indoor relative humidity",
+          "outdoor_temperature": "Outdoor temperature",
+          "outdoor_humidity": "Outdoor relative humidity",
+          "wall_temperature": "Wall temperature (optional)",
+          "fan_entity": "Fan"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This fan is already controlled by a Smart ventilation controller entry.",
+      "reconfigure_successful": "The configuration was updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Smart ventilation controller – options",
+        "description": "Thresholds (buffers, dew point margin, minimum humidity) are set directly on the device's entities.",
+        "data": {
+          "max_runtime": "Maximum continuous runtime",
+          "pause_duration": "Forced pause after maximum runtime",
+          "night_enabled": "Enable quiet hours",
+          "night_start": "Quiet hours from",
+          "night_end": "Quiet hours until",
+          "notify_entities": "Notify via notify entities",
+          "notify_services": "Notify via notify services",
+          "notify_events": "Notify on"
+        },
+        "data_description": {
+          "max_runtime": "0 = unlimited.",
+          "pause_duration": "0 = no pause.",
+          "night_enabled": "During quiet hours the fan is turned off and not turned on.",
+          "night_end": "May be before the start (window across midnight, e.g. 22:00–06:00).",
+          "notify_entities": "E.g. Telegram bot entities (notify.telegram_bot_…).",
+          "notify_services": "Legacy services such as mobile_app_phone."
+        }
+      }
+    }
+  },
+  "selector": {
+    "notify_events": {
+      "options": {
+        "turn_on": "Fan turned on",
+        "turn_off": "Fan turned off",
+        "pause": "Forced pause started",
+        "night": "Turned off for quiet hours",
+        "condensation": "Ventilation blocked by condensation risk"
+      }
+    }
+  }
+}
