@@ -346,7 +346,7 @@ class SmartVentilationController:
         if r.indoor_rh < min_rh:
             return Decision(
                 "min_humidity",
-                f"🔴 Inaktiv – Feuchte innen < {min_rh:.0f} % ({r.indoor_rh:.0f} %)",
+                f"🔴 Inaktiv – Feuchte innen < {min_rh:.0f} % ({r.indoor_rh:.1f} %)",
             )
 
         if diff <= v[NUM_BUFFER_ON]:
@@ -420,8 +420,8 @@ class SmartVentilationController:
     @staticmethod
     def _values_text(r: Readings) -> str:
         return (
-            f"Innen: {r.indoor_temp:.1f} °C / {r.indoor_rh:.0f} % → {r.ah_indoor:.2f} g/m³\n"
-            f"Außen: {r.outdoor_temp:.1f} °C / {r.outdoor_rh:.0f} % → {r.ah_outdoor:.2f} g/m³\n"
+            f"Innen: {r.indoor_temp:.1f} °C / {r.indoor_rh:.1f} % → {r.ah_indoor:.2f} g/m³\n"
+            f"Außen: {r.outdoor_temp:.1f} °C / {r.outdoor_rh:.1f} % → {r.ah_outdoor:.2f} g/m³\n"
             f"Differenz: {r.difference:.2f} g/m³\n"
             f"Taupunkt außen: {r.dew_point_outdoor:.1f} °C"
         )
