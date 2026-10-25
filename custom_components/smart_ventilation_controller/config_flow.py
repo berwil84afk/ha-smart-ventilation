@@ -17,6 +17,7 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
+    CONF_ADDITIONAL_FANS,
     CONF_FAN,
     CONF_INDOOR_HUM,
     CONF_INDOOR_TEMP,
@@ -50,6 +51,9 @@ def _sensor_schema() -> vol.Schema:
             vol.Optional(CONF_WALL_TEMP): sensor,
             vol.Required(CONF_FAN): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=FAN_DOMAINS)
+            ),
+            vol.Optional(CONF_ADDITIONAL_FANS, default=[]): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain=FAN_DOMAINS, multiple=True)
             ),
         }
     )

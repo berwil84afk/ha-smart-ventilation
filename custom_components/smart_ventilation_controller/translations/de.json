@@ -11,11 +11,13 @@
           "outdoor_temperature": "Temperatur außen",
           "outdoor_humidity": "Relative Feuchte außen",
           "wall_temperature": "Wandtemperatur (optional)",
-          "fan_entity": "Lüfter"
+          "fan_entity": "Lüfter",
+          "additional_fans": "Weitere Lüfter (optional)"
         },
         "data_description": {
           "wall_temperature": "Für den Kondensationsschutz. Ohne Angabe wird die Innentemperatur verwendet.",
-          "fan_entity": "Schalter, Ventilator, Licht oder Input-Boolean, der den Lüfter schaltet."
+          "fan_entity": "Schalter, Ventilator, Licht oder Input-Boolean, der den Lüfter schaltet.",
+          "additional_fans": "Werden immer zusammen mit dem Hauptlüfter geschaltet, z. B. Zu- und Abluft."
         }
       },
       "reconfigure": {
@@ -26,7 +28,8 @@
           "outdoor_temperature": "Temperatur außen",
           "outdoor_humidity": "Relative Feuchte außen",
           "wall_temperature": "Wandtemperatur (optional)",
-          "fan_entity": "Lüfter"
+          "fan_entity": "Lüfter",
+          "additional_fans": "Weitere Lüfter (optional)"
         }
       }
     },

@@ -49,6 +49,7 @@ Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uh
 - **Lüftet nur bei Bedarf:** Unterhalb einer einstellbaren Mindestfeuchte im Raum wird nicht gelüftet, auch wenn die Außenluft trockener wäre.
 - **Schont Lüfter und Raum:** Nach einer maximalen Laufzeit am Stück folgt eine Zwangspause. Die Pause übersteht auch einen Neustart von Home Assistant.
 - **Optionale Nachtruhe:** In einem frei wählbaren Zeitfenster, auch über Mitternacht, bleibt der Lüfter aus.
+- **Mehrere Lüfter:** Optional lassen sich weitere Lüfter hinzufügen, z. B. für Zu- und Abluft. Sie werden immer gemeinsam mit dem Hauptlüfter geschaltet.
 - **Ignoriert Messfehler:** Nicht verfügbare Sensoren oder unplausible Werte (z. B. 0 % Feuchte bei Wetterstationen) führen nicht zu Fehlschaltungen.
 - **Macht die Werte sichtbar:** Absolute Feuchte innen und außen, Differenz, Taupunkte, Laufzeit und ein verständlicher Statustext stehen als Sensoren mit Verlauf zur Verfügung.
 - **Benachrichtigt auf Wunsch:** Über Notify-Entitäten (z. B. Telegram) oder klassische Notify-Dienste (z. B. Companion App), pro Ereignis wählbar.
@@ -59,7 +60,7 @@ Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uh
 - Home Assistant **2024.12** oder neuer
 - Einen **Temperatur-** und einen **Feuchtesensor im Raum**
 - Einen **Temperatur-** und einen **Feuchtesensor außen** (z. B. Wetterstation)
-- Einen schaltbaren **Lüfter**: `switch`, `fan`, `light` oder `input_boolean` (z. B. ein Rohrlüfter an einer smarten Steckdose)
+- Mindestens einen schaltbaren **Lüfter**: `switch`, `fan`, `light` oder `input_boolean` (z. B. ein Rohrlüfter an einer smarten Steckdose); weitere Lüfter sind optional
 - Optional: einen Sensor für die **Wandtemperatur**, für einen genaueren Kondensationsschutz
 
 ## Installation
@@ -87,7 +88,7 @@ Oder: *Einstellungen → Geräte & Dienste → Integration hinzufügen → Smart
 
 1. **Name** vergeben, z. B. „Keller“. Er bestimmt die Namen der Entitäten, z. B. `sensor.keller_status`.
 2. **Sensoren** für innen und außen auswählen, optional einen Wandtemperatur-Sensor.
-3. **Lüfter** auswählen.
+3. **Lüfter** auswählen, optional unter „Weitere Lüfter“ zusätzliche Lüfter, die gemeinsam mitgeschaltet werden.
 
 Fertig. Die Steuerung läuft sofort mit sinnvollen Standardwerten.
 
@@ -132,7 +133,7 @@ Beispiel für einen Eintrag mit dem Namen „Keller“:
 | `sensor.keller_feuchtedifferenz` | Innen minus außen (g/m³) |
 | `sensor.keller_taupunkt_innen` | Taupunkt im Raum (°C) |
 | `sensor.keller_taupunkt_aussen` | Taupunkt außen (°C) |
-| `sensor.keller_laufzeit` | Aktuelle Laufzeit des Lüfters (min) |
+| `sensor.keller_laufzeit` | Aktuelle Laufzeit des Lüfters (min); bei mehreren Lüftern seit dem ersten Einschalten |
 | `sensor.keller_pause_bis` | Ende der Zwangspause |
 | `binary_sensor.keller_luften_sinnvoll` | An, wenn alle Bedingungen zum Lüften erfüllt sind |
 | `binary_sensor.keller_kondensationsgefahr` | An, wenn Lüften zu Kondenswasser führen könnte |
@@ -144,6 +145,8 @@ Beispiel für einen Eintrag mit dem Namen „Keller“:
 Schwellwerte, Automatik-Status und eine laufende Pause bleiben über Neustarts erhalten.
 
 ## So entscheidet die Steuerung
+
+Sind mehrere Lüfter eingerichtet, gelten sie als Gruppe: „läuft“, sobald einer von ihnen an ist, und geschaltet werden immer alle erreichbaren Lüfter gemeinsam. Ein einzelner nicht erreichbarer Lüfter blockiert die Steuerung der übrigen nicht.
 
 Die Integration wertet bei jeder Änderung der Sensoren und zusätzlich jede Minute aus, in dieser Reihenfolge:
 
@@ -203,7 +206,7 @@ Mögliche Codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humi
 
 ## Icon
 
-Das eigene Integrations-Icon wird ab Home Assistant **2026.3** angezeigt. Ältere Versionen zeigen ein Platzhalter-Icon; die Funktion ist davon nicht betroffen.
+Das eigene Integrations-Icon wird ab Home Assistant **2026.3** angezeigt, im dunklen Design in einer hellen Variante. Ältere Versionen zeigen ein Platzhalter-Icon; die Funktion ist davon nicht betroffen.
 
 ## Fehler und Wünsche
 

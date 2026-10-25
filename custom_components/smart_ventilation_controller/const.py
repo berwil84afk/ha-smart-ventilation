@@ -16,6 +16,7 @@ CONF_OUTDOOR_TEMP = "outdoor_temperature"
 CONF_OUTDOOR_HUM = "outdoor_humidity"
 CONF_WALL_TEMP = "wall_temperature"
 CONF_FAN = "fan_entity"
+CONF_ADDITIONAL_FANS = "additional_fans"
 
 # Optionen (entry.options)
 CONF_MAX_RUNTIME = "max_runtime"  # Minuten, 0 = unbegrenzt

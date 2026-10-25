@@ -34,6 +34,7 @@ from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .calc import absolute_humidity, dew_point
 from .const import (
+    CONF_ADDITIONAL_FANS,
     CONF_FAN,
     CONF_INDOOR_HUM,
     CONF_INDOOR_TEMP,
@@ -141,10 +142,13 @@ class SmartVentilationController:
         self._lock = asyncio.Lock()
         self._listeners: list[CALLBACK_TYPE] = []
         self._unsubs: list[CALLBACK_TYPE] = []
+        self._available_fans: list[str] = []
 
     @property
-    def fan_entity(self) -> str:
-        return self.config[CONF_FAN]
+    def fan_entities(self) -> list[str]:
+        """Hauptlüfter plus optionale weitere Lüfter, ohne Duplikate."""
+        fans = [self.config[CONF_FAN], *self.config.get(CONF_ADDITIONAL_FANS, [])]
+        return list(dict.fromkeys(fans))
 
     # --- Lebenszyklus -------------------------------------------------------
 
@@ -168,7 +172,7 @@ class SmartVentilationController:
                 self.config[CONF_OUTDOOR_TEMP],
                 self.config[CONF_OUTDOOR_HUM],
                 self.config.get(CONF_WALL_TEMP),
-                self.fan_entity,
+                *self.fan_entities,
             )
             if entity_id
         ]
@@ -229,10 +233,19 @@ class SmartVentilationController:
             now = dt_util.now()
             self.readings = readings = self._read_sensors()
 
-            fan_state = self.hass.states.get(self.fan_entity)
-            fan_available = fan_state is not None and fan_state.state in (STATE_ON, STATE_OFF)
-            fan_on = fan_available and fan_state.state == STATE_ON
-            self.runtime = now - fan_state.last_changed if fan_on else None
+            # Alle Lüfter gelten als Gruppe: an, sobald einer läuft; geschaltet
+            # werden nur die erreichbaren
+            fan_states = [
+                state
+                for entity_id in self.fan_entities
+                if (state := self.hass.states.get(entity_id)) is not None
+                and state.state in (STATE_ON, STATE_OFF)
+            ]
+            self._available_fans = [state.entity_id for state in fan_states]
+            running = [state for state in fan_states if state.state == STATE_ON]
+            fan_available = bool(fan_states)
+            fan_on = bool(running)
+            self.runtime = now - min(state.last_changed for state in running) if running else None
 
             self.night_active = self._in_night_window(now.time())
             if self.pause_until is not None and now >= self.pause_until:
@@ -428,12 +441,13 @@ class SmartVentilationController:
 
     async def _async_switch_fan(self, turn_on: bool) -> bool:
         service = "turn_on" if turn_on else "turn_off"
+        fans = self._available_fans
         try:
             await self.hass.services.async_call(
-                "homeassistant", service, {ATTR_ENTITY_ID: self.fan_entity}, blocking=True
+                "homeassistant", service, {ATTR_ENTITY_ID: fans}, blocking=True
             )
         except HomeAssistantError as err:
-            _LOGGER.error("Lüfter %s konnte nicht geschaltet werden: %s", self.fan_entity, err)
+            _LOGGER.error("Lüfter %s konnten nicht geschaltet werden: %s", ", ".join(fans), err)
             return False
         return True
 

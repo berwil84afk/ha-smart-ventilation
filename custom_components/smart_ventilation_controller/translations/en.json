@@ -11,11 +11,13 @@
           "outdoor_temperature": "Outdoor temperature",
           "outdoor_humidity": "Outdoor relative humidity",
           "wall_temperature": "Wall temperature (optional)",
-          "fan_entity": "Fan"
+          "fan_entity": "Fan",
+          "additional_fans": "Additional fans (optional)"
         },
         "data_description": {
           "wall_temperature": "Used for condensation protection. Falls back to the indoor temperature.",
-          "fan_entity": "Switch, fan, light or input boolean that controls the fan."
+          "fan_entity": "Switch, fan, light or input boolean that controls the fan.",
+          "additional_fans": "Always switched together with the main fan, e.g. supply and exhaust."
         }
       },
       "reconfigure": {
@@ -26,7 +28,8 @@
           "outdoor_temperature": "Outdoor temperature",
           "outdoor_humidity": "Outdoor relative humidity",
           "wall_temperature": "Wall temperature (optional)",
-          "fan_entity": "Fan"
+          "fan_entity": "Fan",
+          "additional_fans": "Additional fans (optional)"
         }
       }
     },
