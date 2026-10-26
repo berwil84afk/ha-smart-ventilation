@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .controller import SmartVentilationConfigEntry
 from .entity import SmartVentilationEntity
 
-AUTOMATIC = SwitchEntityDescription(key="automatic", name="Automatik", icon="mdi:fan-auto")
+AUTOMATIC = SwitchEntityDescription(key="automatic", translation_key="automatic", icon="mdi:fan-auto")
 
 
 async def async_setup_entry(

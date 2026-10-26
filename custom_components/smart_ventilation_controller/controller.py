@@ -33,6 +33,7 @@ from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .calc import absolute_humidity, dew_point
+from .texts import get_texts
 from .const import (
     CONF_ADDITIONAL_FANS,
     CONF_FAN,
@@ -131,7 +132,7 @@ class SmartVentilationController:
         self.pause_until: datetime | None = None
         self.readings: Readings | None = None
         self.runtime: timedelta | None = None
-        self.status = "Initialisierung …"
+        self.status = self._t("init")
         self.status_code = "init"
         self.ventilation_useful = False
         self.condensation_risk = False
@@ -261,7 +262,7 @@ class SmartVentilationController:
                 self._save()
 
             if decision.turn is not None and not await self._async_switch_fan(decision.turn):
-                decision = Decision("error", "❗ Fehler beim Schalten des Lüfters")
+                decision = Decision("error", self._t("error"))
 
             self.status_code = decision.code
             self.status = decision.status
@@ -288,25 +289,25 @@ class SmartVentilationController:
 
     def _decide(self, r: Readings, fan_available: bool, fan_on: bool) -> Decision:
         v = self.values
+        t = self._t
         title = self.entry.title
 
         if not fan_available:
-            return Decision("fan_unavailable", "⚪ Lüfter nicht verfügbar")
+            return Decision("fan_unavailable", t("fan_unavailable"))
 
         if not self.automatic:
-            suffix = " – Lüfter läuft (manuell)" if fan_on else ""
-            return Decision("disabled", f"⚪ Automatik deaktiviert{suffix}")
+            return Decision("disabled", t("disabled_manual" if fan_on else "disabled"))
 
         if self.night_active:
             end = str(self.config[CONF_NIGHT_END])[:5]
-            status = f"😴 Inaktiv – Nachtruhe bis {end} Uhr"
+            status = t("night", end=end)
             if fan_on:
                 return Decision(
                     "night",
                     status,
                     turn=False,
                     event=EVENT_NIGHT,
-                    message=f"🌙 {title}: Lüfter wegen Nachtruhe ausgeschaltet (bis {end} Uhr)",
+                    message=t("night_message", title=title, end=end),
                 )
             return Decision("night", status)
 
@@ -315,74 +316,65 @@ class SmartVentilationController:
             pause = int(self.config[CONF_PAUSE])
             return Decision(
                 "pause",
-                f"⏸️ Inaktiv – Pause nach Maximallaufzeit ({max_runtime} min)",
+                t("max_runtime", max_runtime=max_runtime),
                 turn=False,
                 event=EVENT_PAUSE,
-                message=(
-                    f"⏸️ {title}: Lüfter nach {max_runtime} min Laufzeit pausiert "
-                    f"(mind. {pause} min Pause)"
-                ),
+                message=t("max_runtime_message", title=title, max_runtime=max_runtime, pause=pause),
                 start_pause=pause > 0,
             )
 
         if not r.valid:
-            if fan_on:
-                return Decision("invalid", "⚠️ Ungültige Sensorwerte – Lüfter läuft weiter")
-            return Decision("invalid", "⚪ Inaktiv – ungültige Sensorwerte")
+            return Decision("invalid", t("invalid_running" if fan_on else "invalid"))
 
         diff = r.difference
         min_rh = v[NUM_MIN_HUMIDITY]
 
         if fan_on:
             if r.indoor_rh < min_rh:
-                reason = "Mindestfeuchte unterschritten"
+                reason = t("reason_min_humidity")
             elif diff < v[NUM_BUFFER_OFF]:
-                reason = "AH-Puffer unterschritten"
+                reason = t("reason_buffer_off")
             elif r.dew_point_outdoor >= r.wall_temp:
                 # Ausschalten erst, wenn der Sicherheitsabstand ganz aufgebraucht ist
                 # (Hysterese gegenüber der Einschaltbedingung)
-                reason = "Kondensationsgefahr"
+                reason = t("reason_condensation")
             else:
-                return Decision("running", f"🟢 Aktiv – Lüftung läuft (Diff {diff:.1f} g/m³)")
+                return Decision("running", t("running", diff=diff))
             return Decision(
                 "off",
-                f"🔴 Inaktiv – {reason}",
+                t("off", reason=reason),
                 turn=False,
                 event=EVENT_OFF,
-                message=f"💨 🔴 {title}: Lüfter ausgeschaltet\n{self._values_text(r)}\nGrund: {reason}",
+                message=t("off_message", title=title, values=self._values_text(r), reason=reason),
             )
 
         if self.pause_until is not None:
             until = dt_util.as_local(self.pause_until)
-            return Decision("pause", f"⏸️ Inaktiv – Zwangspause bis {until:%H:%M} Uhr")
+            return Decision("pause", t("pause", until=f"{until:%H:%M}"))
 
         if r.indoor_rh < min_rh:
-            return Decision(
-                "min_humidity",
-                f"🔴 Inaktiv – Feuchte innen < {min_rh:.0f} % ({r.indoor_rh:.1f} %)",
-            )
+            return Decision("min_humidity", t("min_humidity", min_rh=min_rh, rh=r.indoor_rh))
 
         if diff <= v[NUM_BUFFER_ON]:
-            return Decision("difference_low", f"🔴 Inaktiv – AH-Differenz zu gering ({diff:.1f} g/m³)")
+            return Decision("difference_low", t("difference_low", diff=diff))
 
         if self.condensation_risk:
-            text = (
-                f"Taupunkt außen {r.dew_point_outdoor:.1f} °C, "
-                f"Wand {r.wall_temp:.1f} °C, Diff {diff:.1f} g/m³"
+            detail = t(
+                "condensation_detail", dew_point=r.dew_point_outdoor, wall=r.wall_temp, diff=diff
             )
             return Decision(
                 "condensation",
-                f"⚠️ Inaktiv – Kondensationsgefahr ({text})",
+                t("condensation", detail=detail),
                 event=EVENT_CONDENSATION,
-                message=f"⚠️ {title}: Lüften wäre sinnvoll, aber Kondensationsgefahr ({text})",
+                message=t("condensation_message", title=title, detail=detail),
             )
 
         return Decision(
             "running",
-            f"🟢 Aktiv – Lüftung läuft (Diff {diff:.1f} g/m³)",
+            t("running", diff=diff),
             turn=True,
             event=EVENT_ON,
-            message=f"💨 🟢 {title}: Lüfter eingeschaltet\n{self._values_text(r)}",
+            message=t("on_message", title=title, values=self._values_text(r)),
         )
 
     # --- Hilfsfunktionen ----------------------------------------------------
@@ -430,13 +422,21 @@ class SmartVentilationController:
         value = self._read_float(entity_id)
         return value if value is not None and 0 < value <= 100 else None
 
-    @staticmethod
-    def _values_text(r: Readings) -> str:
-        return (
-            f"Innen: {r.indoor_temp:.1f} °C / {r.indoor_rh:.1f} % → {r.ah_indoor:.2f} g/m³\n"
-            f"Außen: {r.outdoor_temp:.1f} °C / {r.outdoor_rh:.1f} % → {r.ah_outdoor:.2f} g/m³\n"
-            f"Differenz: {r.difference:.2f} g/m³\n"
-            f"Taupunkt außen: {r.dew_point_outdoor:.1f} °C"
+    def _t(self, key: str, **kwargs: Any) -> str:
+        """Text in der aktuellen Systemsprache von Home Assistant."""
+        return get_texts(self.hass.config.language)[key].format(**kwargs)
+
+    def _values_text(self, r: Readings) -> str:
+        return self._t(
+            "values",
+            in_t=r.indoor_temp,
+            in_rh=r.indoor_rh,
+            in_ah=r.ah_indoor,
+            out_t=r.outdoor_temp,
+            out_rh=r.outdoor_rh,
+            out_ah=r.ah_outdoor,
+            diff=r.difference,
+            dew_point=r.dew_point_outdoor,
         )
 
     async def _async_switch_fan(self, turn_on: bool) -> bool:
@@ -447,7 +447,7 @@ class SmartVentilationController:
                 "homeassistant", service, {ATTR_ENTITY_ID: fans}, blocking=True
             )
         except HomeAssistantError as err:
-            _LOGGER.error("Lüfter %s konnten nicht geschaltet werden: %s", ", ".join(fans), err)
+            _LOGGER.error("Could not switch fan(s) %s: %s", ", ".join(fans), err)
             return False
         return True
 
@@ -463,7 +463,7 @@ class SmartVentilationController:
                     blocking=True,
                 )
             except HomeAssistantError as err:
-                _LOGGER.warning("Benachrichtigung fehlgeschlagen: %s", err)
+                _LOGGER.warning("Notification failed: %s", err)
         for service in self.config.get(CONF_NOTIFY_SERVICES, []):
             service = service.removeprefix("notify.")
             try:
@@ -471,7 +471,7 @@ class SmartVentilationController:
                     "notify", service, {"message": message}, blocking=True
                 )
             except HomeAssistantError as err:
-                _LOGGER.warning("Benachrichtigung über notify.%s fehlgeschlagen: %s", service, err)
+                _LOGGER.warning("Notification via notify.%s failed: %s", service, err)
 
     @callback
     def _save(self) -> None:

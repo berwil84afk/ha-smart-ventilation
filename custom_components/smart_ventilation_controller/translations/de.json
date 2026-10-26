@@ -74,5 +74,66 @@
         "condensation": "Lüften wegen Kondensationsgefahr verhindert"
       }
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "condensation_risk": {
+        "name": "Kondensationsgefahr"
+      },
+      "night_active": {
+        "name": "Nachtruhe"
+      },
+      "pause_active": {
+        "name": "Zwangspause"
+      },
+      "ventilation_useful": {
+        "name": "Lüften sinnvoll"
+      }
+    },
+    "number": {
+      "buffer_off": {
+        "name": "Ausschalt-Puffer"
+      },
+      "buffer_on": {
+        "name": "Einschalt-Puffer"
+      },
+      "dewpoint_margin": {
+        "name": "Taupunkt-Sicherheitsabstand"
+      },
+      "min_humidity": {
+        "name": "Mindestfeuchte innen"
+      }
+    },
+    "sensor": {
+      "ah_difference": {
+        "name": "Feuchtedifferenz"
+      },
+      "ah_indoor": {
+        "name": "Absolute Feuchte innen"
+      },
+      "ah_outdoor": {
+        "name": "Absolute Feuchte außen"
+      },
+      "dew_point_indoor": {
+        "name": "Taupunkt innen"
+      },
+      "dew_point_outdoor": {
+        "name": "Taupunkt außen"
+      },
+      "pause_until": {
+        "name": "Pause bis"
+      },
+      "runtime": {
+        "name": "Laufzeit"
+      },
+      "status": {
+        "name": "Status"
+      }
+    },
+    "switch": {
+      "automatic": {
+        "name": "Automatik"
+      }
+    }
   }
 }

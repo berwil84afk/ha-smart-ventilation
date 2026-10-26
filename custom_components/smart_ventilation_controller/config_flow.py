@@ -90,7 +90,8 @@ class SmartVentilationConfigFlow(ConfigFlow, domain=DOMAIN):
                 title=title, data=user_input, options=dict(DEFAULT_OPTIONS)
             )
 
-        schema = vol.Schema({vol.Required(CONF_NAME, default="Keller"): str}).extend(
+        default_name = "Keller" if self.hass.config.language.startswith("de") else "Basement"
+        schema = vol.Schema({vol.Required(CONF_NAME, default=default_name): str}).extend(
             _sensor_schema().schema
         )
         return self.async_show_form(step_id="user", data_schema=schema)

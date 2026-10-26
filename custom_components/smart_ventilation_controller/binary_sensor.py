@@ -25,25 +25,25 @@ class SmartVentilationBinarySensorDescription(BinarySensorEntityDescription):
 BINARY_SENSORS: tuple[SmartVentilationBinarySensorDescription, ...] = (
     SmartVentilationBinarySensorDescription(
         key="ventilation_useful",
-        name="Lüften sinnvoll",
+        translation_key="ventilation_useful",
         icon="mdi:fan-chevron-up",
         value_fn=lambda c: c.ventilation_useful,
     ),
     SmartVentilationBinarySensorDescription(
         key="condensation_risk",
-        name="Kondensationsgefahr",
+        translation_key="condensation_risk",
         device_class=BinarySensorDeviceClass.PROBLEM,
         value_fn=lambda c: c.condensation_risk,
     ),
     SmartVentilationBinarySensorDescription(
         key="night_active",
-        name="Nachtruhe",
+        translation_key="night_active",
         icon="mdi:weather-night",
         value_fn=lambda c: c.night_active,
     ),
     SmartVentilationBinarySensorDescription(
         key="pause_active",
-        name="Zwangspause",
+        translation_key="pause_active",
         icon="mdi:timer-pause",
         value_fn=lambda c: c.pause_until is not None,
     ),

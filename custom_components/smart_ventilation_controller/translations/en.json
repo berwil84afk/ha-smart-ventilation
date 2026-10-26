@@ -74,5 +74,66 @@
         "condensation": "Ventilation blocked by condensation risk"
       }
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "condensation_risk": {
+        "name": "Condensation risk"
+      },
+      "night_active": {
+        "name": "Quiet hours"
+      },
+      "pause_active": {
+        "name": "Forced pause"
+      },
+      "ventilation_useful": {
+        "name": "Ventilation useful"
+      }
+    },
+    "number": {
+      "buffer_off": {
+        "name": "Turn-off buffer"
+      },
+      "buffer_on": {
+        "name": "Turn-on buffer"
+      },
+      "dewpoint_margin": {
+        "name": "Dew point safety margin"
+      },
+      "min_humidity": {
+        "name": "Minimum indoor humidity"
+      }
+    },
+    "sensor": {
+      "ah_difference": {
+        "name": "Humidity difference"
+      },
+      "ah_indoor": {
+        "name": "Absolute humidity indoor"
+      },
+      "ah_outdoor": {
+        "name": "Absolute humidity outdoor"
+      },
+      "dew_point_indoor": {
+        "name": "Dew point indoor"
+      },
+      "dew_point_outdoor": {
+        "name": "Dew point outdoor"
+      },
+      "pause_until": {
+        "name": "Pause until"
+      },
+      "runtime": {
+        "name": "Runtime"
+      },
+      "status": {
+        "name": "Status"
+      }
+    },
+    "switch": {
+      "automatic": {
+        "name": "Automatic mode"
+      }
+    }
   }
 }

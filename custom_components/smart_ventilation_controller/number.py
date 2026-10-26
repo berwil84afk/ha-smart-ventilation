@@ -25,7 +25,7 @@ from .entity import SmartVentilationEntity
 NUMBERS: tuple[NumberEntityDescription, ...] = (
     NumberEntityDescription(
         key=NUM_BUFFER_ON,
-        name="Einschalt-Puffer",
+        translation_key=NUM_BUFFER_ON,
         icon="mdi:water-plus",
         native_min_value=0,
         native_max_value=10,
@@ -36,7 +36,7 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
     ),
     NumberEntityDescription(
         key=NUM_BUFFER_OFF,
-        name="Ausschalt-Puffer",
+        translation_key=NUM_BUFFER_OFF,
         icon="mdi:water-minus",
         native_min_value=0,
         native_max_value=10,
@@ -47,7 +47,7 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
     ),
     NumberEntityDescription(
         key=NUM_DEWPOINT_MARGIN,
-        name="Taupunkt-Sicherheitsabstand",
+        translation_key=NUM_DEWPOINT_MARGIN,
         icon="mdi:thermometer-water",
         native_min_value=0,
         native_max_value=10,
@@ -58,7 +58,7 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
     ),
     NumberEntityDescription(
         key=NUM_MIN_HUMIDITY,
-        name="Mindestfeuchte innen",
+        translation_key=NUM_MIN_HUMIDITY,
         icon="mdi:water-percent",
         native_min_value=0,
         native_max_value=100,

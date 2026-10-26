@@ -5,7 +5,7 @@
 <h1 align="center">Smart ventilation controller</h1>
 
 <p align="center">
-  Lüftet Keller und andere feuchte Räume nur dann, wenn es sie wirklich trockener macht.
+  Ventilates basements and other damp rooms only when it actually makes them drier.
 </p>
 
 <p align="center">
@@ -14,200 +14,210 @@
   <img src="https://img.shields.io/badge/Home%20Assistant-2024.12%2B-18BCF2.svg" alt="Home Assistant 2024.12+">
 </p>
 
+<p align="center">
+  <b>🇬🇧 English</b> · <a href="README.de.md">🇩🇪 Deutsch</a>
+</p>
+
 ---
 
-## Warum diese Integration?
+## Why this integration?
 
-Wer einen feuchten Keller hat, lüftet oft nach Gefühl oder nach der **relativen** Luftfeuchtigkeit. Das geht schnell nach hinten los: Im Sommer zieht warme Außenluft durch das offene Fenster oder den Lüfter in den kühlen Keller. Dort kühlt sie ab, die relative Feuchte steigt, und an den kalten Wänden schlägt sich Wasser nieder. Der Keller wird durch das Lüften **feuchter statt trockener**.
+People with a damp basement often ventilate by gut feeling or by **relative** humidity. That easily backfires: in summer, warm outdoor air flows through the open window or the fan into the cool basement. There it cools down, its relative humidity rises, and water condenses on the cold walls. Ventilating makes the basement **wetter instead of drier**.
 
-Entscheidend ist nicht die relative, sondern die **absolute Luftfeuchtigkeit**: wie viel Gramm Wasser tatsächlich in einem Kubikmeter Luft stecken. Lüften trocknet nur, wenn die Außenluft weniger Wasser enthält als die Raumluft.
+What matters is not relative but **absolute humidity**: how many grams of water a cubic metre of air actually contains. Ventilation only dries a room when the outdoor air holds less water than the indoor air.
 
-**Beispiel Sommer:**
+**Summer example:**
 
-| | Temperatur | relative Feuchte | absolute Feuchte |
+| | Temperature | Relative humidity | Absolute humidity |
 |---|---|---|---|
-| Außen | 25 °C | 60 % | **13,8 g/m³** |
-| Keller | 16 °C | 75 % | **10,2 g/m³** |
+| Outdoor | 25 °C | 60 % | **13.8 g/m³** |
+| Basement | 16 °C | 75 % | **10.2 g/m³** |
 
-Die relative Feuchte draußen ist niedriger, trotzdem bringt jeder Kubikmeter Außenluft rund 3,6 g Wasser **zusätzlich** in den Keller. Der Taupunkt der Außenluft liegt bei 16,7 °C, also über der Kellertemperatur: An den Wänden bildet sich Kondenswasser. → **Nicht lüften.**
+The outdoor relative humidity is lower, yet every cubic metre of outdoor air brings about 3.6 g of **additional** water into the basement. The dew point of the outdoor air is 16.7 °C, above the basement temperature, so condensation forms on the walls. → **Don't ventilate.**
 
-**Beispiel Winter:**
+**Winter example:**
 
-| | Temperatur | relative Feuchte | absolute Feuchte |
+| | Temperature | Relative humidity | Absolute humidity |
 |---|---|---|---|
-| Außen | 2 °C | 90 % | **5,0 g/m³** |
-| Keller | 14 °C | 70 % | **8,4 g/m³** |
+| Outdoor | 2 °C | 90 % | **5.0 g/m³** |
+| Basement | 14 °C | 70 % | **8.4 g/m³** |
 
-Obwohl es draußen „nass“ aussieht, enthält die kalte Luft deutlich weniger Wasser. Jeder Kubikmeter Außenluft nimmt rund 3,4 g Feuchtigkeit aus dem Keller mit. → **Lüften lohnt sich.**
+Although it looks "wet" outside, the cold air holds much less water. Every cubic metre of outdoor air carries about 3.4 g of moisture out of the basement. → **Ventilating pays off.**
 
-Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uhr, und schaltet deinen Lüfter automatisch.
+The Smart ventilation controller does exactly this calculation around the clock and switches your fan automatically.
 
-## Was die Integration macht
+## What it does
 
-- **Schaltet nach absoluter Feuchte:** Der Lüfter läuft nur, wenn die Raumluft spürbar mehr Wasser enthält als die Außenluft. Ein- und Ausschaltschwelle sind getrennt (Hysterese), damit der Lüfter nicht ständig an und aus geht.
-- **Schützt vor Kondenswasser:** Liegt der Taupunkt der Außenluft zu nah an der Wandtemperatur, bleibt der Lüfter aus. Ohne eigenen Wandsensor wird die Raumtemperatur als Näherung verwendet.
-- **Lüftet nur bei Bedarf:** Unterhalb einer einstellbaren Mindestfeuchte im Raum wird nicht gelüftet, auch wenn die Außenluft trockener wäre.
-- **Schont Lüfter und Raum:** Nach einer maximalen Laufzeit am Stück folgt eine Zwangspause. Die Pause übersteht auch einen Neustart von Home Assistant.
-- **Optionale Nachtruhe:** In einem frei wählbaren Zeitfenster, auch über Mitternacht, bleibt der Lüfter aus.
-- **Mehrere Lüfter:** Optional lassen sich weitere Lüfter hinzufügen, z. B. für Zu- und Abluft. Sie werden immer gemeinsam mit dem Hauptlüfter geschaltet.
-- **Ignoriert Messfehler:** Nicht verfügbare Sensoren oder unplausible Werte (z. B. 0 % Feuchte bei Wetterstationen) führen nicht zu Fehlschaltungen.
-- **Macht die Werte sichtbar:** Absolute Feuchte innen und außen, Differenz, Taupunkte, Laufzeit und ein verständlicher Statustext stehen als Sensoren mit Verlauf zur Verfügung.
-- **Benachrichtigt auf Wunsch:** Über Notify-Entitäten (z. B. Telegram) oder klassische Notify-Dienste (z. B. Companion App), pro Ereignis wählbar.
-- **Komplett über die Oberfläche:** Kein YAML, keine Helfer, keine Vorlagen. Mehrere Räume lassen sich unabhängig voneinander einrichten.
+- **Switches by absolute humidity:** The fan only runs when the indoor air holds noticeably more water than the outdoor air. Separate turn-on and turn-off thresholds (hysteresis) keep the fan from cycling on and off.
+- **Prevents condensation:** If the outdoor dew point is too close to the wall temperature, the fan stays off. Without a wall sensor, the indoor temperature is used as an approximation.
+- **Ventilates only when needed:** Below an adjustable minimum indoor humidity, it does not ventilate, even if the outdoor air is drier.
+- **Protects fan and room:** After a maximum continuous runtime, a forced pause follows. The pause survives a Home Assistant restart.
+- **Optional quiet hours:** The fan stays off during a time window of your choice, also across midnight.
+- **Multiple fans:** Optionally add more fans, e.g. for supply and exhaust air. They are always switched together with the main fan.
+- **Ignores bad readings:** Unavailable sensors or implausible values (e.g. 0 % humidity from weather stations) never cause wrong switching.
+- **Makes the values visible:** Absolute humidity indoor and outdoor, the difference, dew points, runtime and a readable status are available as sensors with history.
+- **Notifies on request:** Via notify entities (e.g. Telegram) or legacy notify services (e.g. the Companion app), selectable per event.
+- **Entirely in the UI:** No YAML, no helpers, no templates. Set up as many rooms as you like, each independently.
 
-## Was du brauchst
+## Requirements
 
-- Home Assistant **2024.12** oder neuer
-- Einen **Temperatur-** und einen **Feuchtesensor im Raum**
-- Einen **Temperatur-** und einen **Feuchtesensor außen** (z. B. Wetterstation)
-- Mindestens einen schaltbaren **Lüfter**: `switch`, `fan`, `light` oder `input_boolean` (z. B. ein Rohrlüfter an einer smarten Steckdose); weitere Lüfter sind optional
-- Optional: einen Sensor für die **Wandtemperatur**, für einen genaueren Kondensationsschutz
+- Home Assistant **2024.12** or newer
+- A **temperature** and a **humidity sensor indoors**
+- A **temperature** and a **humidity sensor outdoors** (e.g. a weather station)
+- At least one switchable **fan**: `switch`, `fan`, `light` or `input_boolean` (e.g. an inline duct fan on a smart plug); more fans are optional
+- Optional: a **wall temperature** sensor for more accurate condensation protection
 
 ## Installation
 
-### Über HACS (empfohlen)
+### Via HACS (recommended)
 
-[![Repository in HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=berwil84afk&repository=ha-smart-ventilation&category=integration)
+[![Open the repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=berwil84afk&repository=ha-smart-ventilation&category=integration)
 
-Oder von Hand:
+Or manually in HACS:
 
-1. In HACS oben rechts auf **⋮ → Benutzerdefinierte Repositories** gehen.
-2. `https://github.com/berwil84afk/ha-smart-ventilation` eintragen, Typ **Integration**.
-3. **Smart ventilation controller** herunterladen und Home Assistant neu starten.
+1. In HACS, open **⋮ → Custom repositories** in the top right corner.
+2. Add `https://github.com/berwil84afk/ha-smart-ventilation` with type **Integration**.
+3. Download **Smart ventilation controller** and restart Home Assistant.
 
-### Manuell
+### Manual
 
-1. Den Ordner `custom_components/smart_ventilation_controller` nach `/config/custom_components/` kopieren.
-2. Home Assistant neu starten.
+1. Copy the folder `custom_components/smart_ventilation_controller` to `/config/custom_components/`.
+2. Restart Home Assistant.
 
-## Einrichtung
+## Setup
 
-[![Integration hinzufügen](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=smart_ventilation_controller)
+[![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=smart_ventilation_controller)
 
-Oder: *Einstellungen → Geräte & Dienste → Integration hinzufügen → Smart ventilation controller*.
+Or: *Settings → Devices & services → Add integration → Smart ventilation controller*.
 
-1. **Name** vergeben, z. B. „Keller“. Er bestimmt die Namen der Entitäten, z. B. `sensor.keller_status`.
-2. **Sensoren** für innen und außen auswählen, optional einen Wandtemperatur-Sensor.
-3. **Lüfter** auswählen, optional unter „Weitere Lüfter“ zusätzliche Lüfter, die gemeinsam mitgeschaltet werden.
+1. Enter a **name**, e.g. "Basement". It determines the entity names, e.g. `sensor.basement_status`.
+2. Select the **sensors** for indoor and outdoor, optionally a wall temperature sensor.
+3. Select the **fan**, and optionally more fans under "Additional fans" that are switched along with it.
 
-Fertig. Die Steuerung läuft sofort mit sinnvollen Standardwerten.
+Done. Control starts right away with sensible defaults.
 
-Für jeden weiteren Raum die Integration einfach erneut hinzufügen. Sensoren oder Lüfter lassen sich später über **⋮ → Neu konfigurieren** tauschen.
+For each additional room, simply add the integration again. Sensors and fans can be changed later via **⋮ → Reconfigure**.
 
-## Einstellungen
+## Settings
 
-### Schwellwerte (direkt im Dashboard)
+### Thresholds (directly on the dashboard)
 
-Die Schwellwerte sind eigene Entitäten des Geräts und lassen sich jederzeit im Dashboard ändern:
+The thresholds are entities of the device and can be changed on the dashboard at any time:
 
-| Entität | Standard | Bedeutung |
+| Entity | Default | Meaning |
 |---|---|---|
-| Einschalt-Puffer | 2,5 g/m³ | So viel mehr Wasser muss die Raumluft enthalten, damit der Lüfter einschaltet |
-| Ausschalt-Puffer | 1,0 g/m³ | Fällt die Differenz darunter, schaltet der Lüfter wieder aus |
-| Taupunkt-Sicherheitsabstand | 2 °C | So weit muss der Taupunkt außen unter der Wandtemperatur liegen |
-| Mindestfeuchte innen | 55 % | Darunter wird nicht gelüftet |
+| Turn-on buffer | 2.5 g/m³ | How much more water the indoor air must hold for the fan to turn on |
+| Turn-off buffer | 1.0 g/m³ | If the difference drops below this, the fan turns off again |
+| Dew point safety margin | 2 °C | How far the outdoor dew point must stay below the wall temperature |
+| Minimum indoor humidity | 55 % | No ventilation below this value |
 
-### Optionen (über „Konfigurieren“)
+### Options (via "Configure")
 
-| Option | Standard | Bedeutung |
+| Option | Default | Meaning |
 |---|---|---|
-| Maximale Laufzeit am Stück | 60 min | Danach Zwangspause; 0 = unbegrenzt |
-| Zwangspause | 60 min | Mindestpause nach der Maximallaufzeit; 0 = keine Pause |
-| Nachtruhe aktivieren | aus | Schaltet den Lüfter im gewählten Zeitfenster ab |
-| Nachtruhe von / bis | 00:00 / 06:00 | Auch über Mitternacht möglich, z. B. 22:00–06:00 |
-| Notify-Entitäten | – | z. B. `notify.telegram_bot_…` |
-| Notify-Dienste | – | z. B. `mobile_app_handy` |
-| Benachrichtigen bei | ein, aus, Pause, Nachtruhe | Zusätzlich wählbar: Lüften wegen Kondensationsgefahr verhindert |
+| Maximum continuous runtime | 60 min | Forced pause afterwards; 0 = unlimited |
+| Forced pause | 60 min | Minimum pause after the maximum runtime; 0 = no pause |
+| Enable quiet hours | off | Turns the fan off during the chosen time window |
+| Quiet hours from / until | 00:00 / 06:00 | Can span midnight, e.g. 22:00–06:00 |
+| Notify entities | – | e.g. `notify.telegram_bot_…` |
+| Notify services | – | e.g. `mobile_app_phone` |
+| Notify on | on, off, pause, quiet hours | Also available: ventilation blocked by condensation risk |
 
-Ohne Notify-Ziel werden keine Nachrichten verschickt.
+Without a notify target, no messages are sent.
 
-## Entitäten
+## Entities
 
-Beispiel für einen Eintrag mit dem Namen „Keller“:
+Entity names follow the Home Assistant language (English or German). Example for an entry named "Basement" on an English installation:
 
-| Entität | Beschreibung |
+| Entity | Description |
 |---|---|
-| `sensor.keller_status` | Statustext, z. B. „🟢 Aktiv – Lüftung läuft (Diff 3,1 g/m³)“; das Attribut `code` eignet sich für eigene Automationen |
-| `sensor.keller_absolute_feuchte_innen` | Absolute Feuchte im Raum (g/m³) |
-| `sensor.keller_absolute_feuchte_aussen` | Absolute Feuchte außen (g/m³) |
-| `sensor.keller_feuchtedifferenz` | Innen minus außen (g/m³) |
-| `sensor.keller_taupunkt_innen` | Taupunkt im Raum (°C) |
-| `sensor.keller_taupunkt_aussen` | Taupunkt außen (°C) |
-| `sensor.keller_laufzeit` | Aktuelle Laufzeit des Lüfters (min); bei mehreren Lüftern seit dem ersten Einschalten |
-| `sensor.keller_pause_bis` | Ende der Zwangspause |
-| `binary_sensor.keller_luften_sinnvoll` | An, wenn alle Bedingungen zum Lüften erfüllt sind |
-| `binary_sensor.keller_kondensationsgefahr` | An, wenn Lüften zu Kondenswasser führen könnte |
-| `binary_sensor.keller_nachtruhe` | An, während die Nachtruhe aktiv ist |
-| `binary_sensor.keller_zwangspause` | An, während der Zwangspause |
-| `switch.keller_automatik` | Steuerung an/aus; beim Ausschalten bleibt der Lüfter im aktuellen Zustand |
-| `number.keller_…` | Die vier Schwellwerte (siehe oben) |
+| `sensor.basement_status` | Status text, e.g. "🟢 Active – ventilating (diff 3.1 g/m³)"; the `code` attribute is meant for your own automations |
+| `sensor.basement_absolute_humidity_indoor` | Absolute humidity indoors (g/m³) |
+| `sensor.basement_absolute_humidity_outdoor` | Absolute humidity outdoors (g/m³) |
+| `sensor.basement_humidity_difference` | Indoor minus outdoor (g/m³) |
+| `sensor.basement_dew_point_indoor` | Indoor dew point (°C) |
+| `sensor.basement_dew_point_outdoor` | Outdoor dew point (°C) |
+| `sensor.basement_runtime` | Current fan runtime (min); with several fans, since the first one turned on |
+| `sensor.basement_pause_until` | End of the forced pause |
+| `binary_sensor.basement_ventilation_useful` | On when all conditions for ventilating are met |
+| `binary_sensor.basement_condensation_risk` | On when ventilating could cause condensation |
+| `binary_sensor.basement_quiet_hours` | On while quiet hours are active |
+| `binary_sensor.basement_forced_pause` | On during the forced pause |
+| `switch.basement_automatic_mode` | Control on/off; when switched off, the fan keeps its current state |
+| `number.basement_…` | The four thresholds (see above) |
 
-Schwellwerte, Automatik-Status und eine laufende Pause bleiben über Neustarts erhalten.
+Thresholds, automatic mode and a running pause are kept across restarts.
 
-## So entscheidet die Steuerung
+Status texts and notification messages follow the Home Assistant language as well: German for German installations, English for all others. The `code` attribute of the status sensor is language-independent.
 
-Sind mehrere Lüfter eingerichtet, gelten sie als Gruppe: „läuft“, sobald einer von ihnen an ist, und geschaltet werden immer alle erreichbaren Lüfter gemeinsam. Ein einzelner nicht erreichbarer Lüfter blockiert die Steuerung der übrigen nicht.
+## How it decides
 
-Die Integration wertet bei jeder Änderung der Sensoren und zusätzlich jede Minute aus, in dieser Reihenfolge:
+If several fans are configured, they act as a group: the group counts as "running" as soon as one fan is on, and all reachable fans are always switched together. A single unreachable fan does not block control of the others.
 
-1. **Lüfter nicht erreichbar** oder **Automatik aus** → nichts tun.
-2. **Nachtruhe aktiv** → Lüfter aus und nicht einschalten.
-3. **Maximale Laufzeit erreicht** → Lüfter aus, Zwangspause starten.
-4. **Messwerte ungültig** → nichts schalten.
-5. **Lüfter läuft** → ausschalten, sobald
-   - die Feuchte innen unter die Mindestfeuchte fällt, **oder**
-   - die Differenz unter den Ausschalt-Puffer fällt, **oder**
-   - der Taupunkt außen die Wandtemperatur erreicht.
-6. **Lüfter steht** → einschalten, wenn
-   - keine Zwangspause läuft, **und**
-   - die Feuchte innen mindestens der Mindestfeuchte entspricht, **und**
-   - die Differenz größer als der Einschalt-Puffer ist, **und**
-   - der Taupunkt außen mindestens um den Sicherheitsabstand unter der Wandtemperatur liegt.
+The integration evaluates on every sensor change and additionally once a minute, in this order:
 
-Die absolute Feuchte und der Taupunkt werden mit der Magnus-Formel berechnet. Temperaturen in °F oder K werden automatisch umgerechnet.
+1. **Fan unreachable** or **automatic mode off** → do nothing.
+2. **Quiet hours active** → fan off, do not turn on.
+3. **Maximum runtime reached** → fan off, start forced pause.
+4. **Readings invalid** → do not switch.
+5. **Fan running** → turn off as soon as
+   - indoor humidity drops below the minimum, **or**
+   - the difference drops below the turn-off buffer, **or**
+   - the outdoor dew point reaches the wall temperature.
+6. **Fan off** → turn on if
+   - no forced pause is active, **and**
+   - indoor humidity is at least the minimum, **and**
+   - the difference is greater than the turn-on buffer, **and**
+   - the outdoor dew point is at least the safety margin below the wall temperature.
 
-## Beispiele
+Absolute humidity and dew point are calculated with the Magnus formula. Temperatures in °F or K are converted automatically.
 
-### Dashboard-Karte
+## Examples
+
+### Dashboard card
 
 ```yaml
 type: entities
-title: Kellerlüftung
+title: Basement ventilation
 entities:
-  - entity: sensor.keller_status
-  - entity: switch.keller_automatik
-  - entity: sensor.keller_absolute_feuchte_innen
-  - entity: sensor.keller_absolute_feuchte_aussen
-  - entity: sensor.keller_feuchtedifferenz
-  - entity: binary_sensor.keller_kondensationsgefahr
-  - entity: sensor.keller_laufzeit
+  - entity: sensor.basement_status
+  - entity: switch.basement_automatic_mode
+  - entity: sensor.basement_absolute_humidity_indoor
+  - entity: sensor.basement_absolute_humidity_outdoor
+  - entity: sensor.basement_humidity_difference
+  - entity: binary_sensor.basement_condensation_risk
+  - entity: sensor.basement_runtime
 ```
 
-### Eigene Benachrichtigung mit dem Status-Code
+### Custom notification using the status code
 
-Wer Nachrichten an unterschiedliche Empfänger schicken möchte, lässt die Benachrichtigungen der Integration leer und reagiert stattdessen auf das Attribut `code` des Status-Sensors:
+To send messages to different recipients or in your own language, leave the integration's notifications empty and react to the `code` attribute of the status sensor instead:
 
 ```yaml
-alias: Kellerlüftung – Nachtruhe melden
+alias: Basement ventilation – quiet hours
 triggers:
   - trigger: state
-    entity_id: sensor.keller_status
+    entity_id: sensor.basement_status
     attribute: code
     to: night
 actions:
   - action: notify.send_message
     target:
-      entity_id: notify.telegram_familie
+      entity_id: notify.telegram_family
     data:
-      message: "🌙 Kellerlüftung pausiert für die Nachtruhe."
+      message: "🌙 Basement ventilation paused for quiet hours."
 ```
 
-Mögliche Codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humidity`, `condensation`, `invalid`, `disabled`, `fan_unavailable`, `error`.
+Possible codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humidity`, `condensation`, `invalid`, `disabled`, `fan_unavailable`, `error`.
 
 ## Icon
 
-Das eigene Integrations-Icon wird ab Home Assistant **2026.3** angezeigt, im dunklen Design in einer hellen Variante. Ältere Versionen zeigen ein Platzhalter-Icon; die Funktion ist davon nicht betroffen.
+The integration's own icon is shown from Home Assistant **2026.3**, with a light variant in dark mode. Older versions show a placeholder icon; functionality is not affected.
 
-## Fehler und Wünsche
+## Issues and ideas
 
-Fehler oder Ideen bitte als [Issue](https://github.com/berwil84afk/ha-smart-ventilation/issues) melden. Hilfreich sind dabei die Home-Assistant-Version und die Meldungen aus dem Protokoll (*Einstellungen → System → Protokolle*).
+Please report bugs or ideas as an [issue](https://github.com/berwil84afk/ha-smart-ventilation/issues). Helpful details are the Home Assistant version and the messages from the log (*Settings → System → Logs*).
+
+## License
+
+Released under the [MIT License](LICENSE).

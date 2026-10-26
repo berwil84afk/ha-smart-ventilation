@@ -36,10 +36,10 @@ def _reading(attr: str) -> Callable[[SmartVentilationController], float | None]:
     return lambda c: getattr(c.readings, attr) if c.readings else None
 
 
-def _ah(key: str, name: str, attr: str, icon: str) -> SmartVentilationSensorDescription:
+def _ah(key: str, attr: str, icon: str) -> SmartVentilationSensorDescription:
     return SmartVentilationSensorDescription(
         key=key,
-        name=name,
+        translation_key=key,
         icon=icon,
         native_unit_of_measurement=UNIT_ABSOLUTE_HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -48,10 +48,10 @@ def _ah(key: str, name: str, attr: str, icon: str) -> SmartVentilationSensorDesc
     )
 
 
-def _dew_point(key: str, name: str, attr: str) -> SmartVentilationSensorDescription:
+def _dew_point(key: str, attr: str) -> SmartVentilationSensorDescription:
     return SmartVentilationSensorDescription(
         key=key,
-        name=name,
+        translation_key=key,
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
@@ -61,14 +61,14 @@ def _dew_point(key: str, name: str, attr: str) -> SmartVentilationSensorDescript
 
 
 SENSORS: tuple[SmartVentilationSensorDescription, ...] = (
-    _ah("ah_indoor", "Absolute Feuchte innen", "ah_indoor", "mdi:home-thermometer"),
-    _ah("ah_outdoor", "Absolute Feuchte außen", "ah_outdoor", "mdi:weather-cloudy"),
-    _ah("ah_difference", "Feuchtedifferenz", "difference", "mdi:water-sync"),
-    _dew_point("dew_point_indoor", "Taupunkt innen", "dew_point_indoor"),
-    _dew_point("dew_point_outdoor", "Taupunkt außen", "dew_point_outdoor"),
+    _ah("ah_indoor", "ah_indoor", "mdi:home-thermometer"),
+    _ah("ah_outdoor", "ah_outdoor", "mdi:weather-cloudy"),
+    _ah("ah_difference", "difference", "mdi:water-sync"),
+    _dew_point("dew_point_indoor", "dew_point_indoor"),
+    _dew_point("dew_point_outdoor", "dew_point_outdoor"),
     SmartVentilationSensorDescription(
         key="runtime",
-        name="Laufzeit",
+        translation_key="runtime",
         icon="mdi:timer-outline",
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
@@ -76,14 +76,14 @@ SENSORS: tuple[SmartVentilationSensorDescription, ...] = (
     ),
     SmartVentilationSensorDescription(
         key="pause_until",
-        name="Pause bis",
+        translation_key="pause_until",
         icon="mdi:timer-pause",
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda c: c.pause_until,
     ),
     SmartVentilationSensorDescription(
         key="status",
-        name="Status",
+        translation_key="status",
         icon="mdi:fan-alert",
         value_fn=lambda c: c.status,
         attrs_fn=lambda c: {"code": c.status_code},
