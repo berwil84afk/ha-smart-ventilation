@@ -12,12 +12,16 @@
           "outdoor_humidity": "Outdoor relative humidity",
           "wall_temperature": "Wall temperature (optional)",
           "fan_entity": "Fan",
-          "additional_fans": "Additional fans (optional)"
+          "additional_fans": "Additional fans (optional)",
+          "power_source": "Power source",
+          "battery_level": "Battery level (battery only)"
         },
         "data_description": {
           "wall_temperature": "Used for condensation protection. Falls back to the indoor temperature.",
           "fan_entity": "Switch, fan, light or input boolean that controls the fan.",
-          "additional_fans": "Always switched together with the main fan, e.g. supply and exhaust."
+          "additional_fans": "Always switched together with the main fan, e.g. supply and exhaust.",
+          "power_source": "With a battery, the battery level is taken into account as well.",
+          "battery_level": "Sensor with the battery level in %, e.g. of a battery or power station."
         }
       },
       "reconfigure": {
@@ -29,13 +33,22 @@
           "outdoor_humidity": "Outdoor relative humidity",
           "wall_temperature": "Wall temperature (optional)",
           "fan_entity": "Fan",
-          "additional_fans": "Additional fans (optional)"
+          "additional_fans": "Additional fans (optional)",
+          "power_source": "Power source",
+          "battery_level": "Battery level (battery only)"
+        },
+        "data_description": {
+          "power_source": "With a battery, the battery level is taken into account as well.",
+          "battery_level": "Sensor with the battery level in %, e.g. of a battery or power station."
         }
       }
     },
     "abort": {
       "already_configured": "This fan is already controlled by a Smart ventilation controller entry.",
       "reconfigure_successful": "The configuration was updated."
+    },
+    "error": {
+      "battery_level_required": "A battery level sensor is required when the power source is “Battery”."
     }
   },
   "options": {
@@ -71,7 +84,14 @@
         "turn_off": "Fan turned off",
         "pause": "Forced pause started",
         "night": "Turned off for quiet hours",
-        "condensation": "Ventilation blocked by condensation risk"
+        "condensation": "Ventilation blocked by condensation risk",
+        "battery_low": "Turned off due to low battery"
+      }
+    },
+    "power_source": {
+      "options": {
+        "grid": "Grid",
+        "battery": "Battery"
       }
     }
   },
@@ -88,6 +108,9 @@
       },
       "ventilation_useful": {
         "name": "Ventilation useful"
+      },
+      "battery_low": {
+        "name": "Battery level too low"
       }
     },
     "number": {
@@ -102,6 +125,9 @@
       },
       "min_humidity": {
         "name": "Minimum indoor humidity"
+      },
+      "min_battery": {
+        "name": "Minimum battery level"
       }
     },
     "sensor": {

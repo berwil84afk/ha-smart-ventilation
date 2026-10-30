@@ -54,6 +54,7 @@ The Smart ventilation controller does exactly this calculation around the clock 
 - **Protects fan and room:** After a maximum continuous runtime, a forced pause follows. The pause survives a Home Assistant restart.
 - **Optional quiet hours:** The fan stays off during a time window of your choice, also across midnight.
 - **Multiple fans:** Optionally add more fans, e.g. for supply and exhaust air. They are always switched together with the main fan.
+- **Battery operation:** If the fan runs on a battery or power station, the controller watches the battery level and stops turning the fan on below an adjustable limit.
 - **Ignores bad readings:** Unavailable sensors or implausible values (e.g. 0 % humidity from weather stations) never cause wrong switching.
 - **Makes the values visible:** Absolute humidity indoor and outdoor, the difference, dew points, runtime and a readable status are available as sensors with history.
 - **Notifies on request:** Via notify entities (e.g. Telegram) or legacy notify services (e.g. the Companion app), selectable per event.
@@ -66,6 +67,7 @@ The Smart ventilation controller does exactly this calculation around the clock 
 - A **temperature** and a **humidity sensor outdoors** (e.g. a weather station)
 - At least one switchable **fan**: `switch`, `fan`, `light` or `input_boolean` (e.g. an inline duct fan on a smart plug); more fans are optional
 - Optional: a **wall temperature** sensor for more accurate condensation protection
+- For battery operation: a **battery level** sensor in %
 
 ## Installation
 
@@ -93,6 +95,7 @@ Or: *Settings → Devices & services → Add integration → Smart ventilation c
 1. Enter a **name**, e.g. "Basement". It determines the entity names, e.g. `sensor.basement_status`.
 2. Select the **sensors** for indoor and outdoor, optionally a wall temperature sensor.
 3. Select the **fan**, and optionally more fans under "Additional fans" that are switched along with it.
+4. Choose the **power source**: "Grid" (default) or "Battery". For a battery, also select the **battery level** sensor.
 
 Done. Control starts right away with sensible defaults.
 
@@ -110,6 +113,7 @@ The thresholds are entities of the device and can be changed on the dashboard at
 | Turn-off buffer | 1.0 g/m³ | If the difference drops below this, the fan turns off again |
 | Dew point safety margin | 2 °C | How far the outdoor dew point must stay below the wall temperature |
 | Minimum indoor humidity | 55 % | No ventilation below this value |
+| Minimum battery level | 20 % | Battery only: below this, the fan is not turned on and a running fan is turned off; released again at limit + 5 % |
 
 ### Options (via "Configure")
 
@@ -121,7 +125,7 @@ The thresholds are entities of the device and can be changed on the dashboard at
 | Quiet hours from / until | 00:00 / 06:00 | Can span midnight, e.g. 22:00–06:00 |
 | Notify entities | – | e.g. `notify.telegram_bot_…` |
 | Notify services | – | e.g. `mobile_app_phone` |
-| Notify on | on, off, pause, quiet hours | Also available: ventilation blocked by condensation risk |
+| Notify on | on, off, pause, quiet hours, low battery | Also available: ventilation blocked by condensation risk |
 
 Without a notify target, no messages are sent.
 
@@ -144,7 +148,8 @@ Entity names follow the Home Assistant language (English or German). Example for
 | `binary_sensor.basement_quiet_hours` | On while quiet hours are active |
 | `binary_sensor.basement_forced_pause` | On during the forced pause |
 | `switch.basement_automatic_mode` | Control on/off; when switched off, the fan keeps its current state |
-| `number.basement_…` | The four thresholds (see above) |
+| `binary_sensor.basement_battery_level_too_low` | Battery only: on while the battery level blocks ventilation |
+| `number.basement_…` | The thresholds (see above); "Minimum battery level" for battery only |
 
 Thresholds, automatic mode and a running pause are kept across restarts.
 
@@ -159,12 +164,15 @@ The integration evaluates on every sensor change and additionally once a minute,
 1. **Fan unreachable** or **automatic mode off** → do nothing.
 2. **Quiet hours active** → fan off, do not turn on.
 3. **Maximum runtime reached** → fan off, start forced pause.
-4. **Readings invalid** → do not switch.
-5. **Fan running** → turn off as soon as
+4. **Battery only:**
+   - Battery level below the limit → fan off, do not turn on. Released again only at limit + 5 %, so the fan does not keep cycling.
+   - Battery level unknown → do not turn on; a running fan is controlled as usual.
+5. **Readings invalid** → do not switch.
+6. **Fan running** → turn off as soon as
    - indoor humidity drops below the minimum, **or**
    - the difference drops below the turn-off buffer, **or**
    - the outdoor dew point reaches the wall temperature.
-6. **Fan off** → turn on if
+7. **Fan off** → turn on if
    - no forced pause is active, **and**
    - indoor humidity is at least the minimum, **and**
    - the difference is greater than the turn-on buffer, **and**
@@ -208,7 +216,7 @@ actions:
       message: "🌙 Basement ventilation paused for quiet hours."
 ```
 
-Possible codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humidity`, `condensation`, `invalid`, `disabled`, `fan_unavailable`, `error`.
+Possible codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humidity`, `condensation`, `invalid`, `disabled`, `fan_unavailable`, `battery_low`, `battery_unknown`, `error`.
 
 ## Icon
 

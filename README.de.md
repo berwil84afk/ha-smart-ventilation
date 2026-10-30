@@ -54,6 +54,7 @@ Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uh
 - **Schont Lüfter und Raum:** Nach einer maximalen Laufzeit am Stück folgt eine Zwangspause. Die Pause übersteht auch einen Neustart von Home Assistant.
 - **Optionale Nachtruhe:** In einem frei wählbaren Zeitfenster, auch über Mitternacht, bleibt der Lüfter aus.
 - **Mehrere Lüfter:** Optional lassen sich weitere Lüfter hinzufügen, z. B. für Zu- und Abluft. Sie werden immer gemeinsam mit dem Hauptlüfter geschaltet.
+- **Batteriebetrieb:** Läuft der Lüfter an einem Akku oder einer Powerstation, achtet die Steuerung auf den Ladezustand und schaltet unterhalb einer einstellbaren Grenze nicht mehr ein.
 - **Ignoriert Messfehler:** Nicht verfügbare Sensoren oder unplausible Werte (z. B. 0 % Feuchte bei Wetterstationen) führen nicht zu Fehlschaltungen.
 - **Macht die Werte sichtbar:** Absolute Feuchte innen und außen, Differenz, Taupunkte, Laufzeit und ein verständlicher Statustext stehen als Sensoren mit Verlauf zur Verfügung.
 - **Benachrichtigt auf Wunsch:** Über Notify-Entitäten (z. B. Telegram) oder klassische Notify-Dienste (z. B. Companion App), pro Ereignis wählbar.
@@ -66,6 +67,7 @@ Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uh
 - Einen **Temperatur-** und einen **Feuchtesensor außen** (z. B. Wetterstation)
 - Mindestens einen schaltbaren **Lüfter**: `switch`, `fan`, `light` oder `input_boolean` (z. B. ein Rohrlüfter an einer smarten Steckdose); weitere Lüfter sind optional
 - Optional: einen Sensor für die **Wandtemperatur**, für einen genaueren Kondensationsschutz
+- Bei Batteriebetrieb: einen Sensor mit dem **Ladezustand** in %
 
 ## Installation
 
@@ -93,6 +95,7 @@ Oder: *Einstellungen → Geräte & Dienste → Integration hinzufügen → Smart
 1. **Name** vergeben, z. B. „Keller“. Er bestimmt die Namen der Entitäten, z. B. `sensor.keller_status`.
 2. **Sensoren** für innen und außen auswählen, optional einen Wandtemperatur-Sensor.
 3. **Lüfter** auswählen, optional unter „Weitere Lüfter“ zusätzliche Lüfter, die gemeinsam mitgeschaltet werden.
+4. **Stromquelle** wählen: „Stromnetz“ (Standard) oder „Batterie“. Bei Batterie zusätzlich den **Ladezustand**-Sensor auswählen.
 
 Fertig. Die Steuerung läuft sofort mit sinnvollen Standardwerten.
 
@@ -110,6 +113,7 @@ Die Schwellwerte sind eigene Entitäten des Geräts und lassen sich jederzeit im
 | Ausschalt-Puffer | 1,0 g/m³ | Fällt die Differenz darunter, schaltet der Lüfter wieder aus |
 | Taupunkt-Sicherheitsabstand | 2 °C | So weit muss der Taupunkt außen unter der Wandtemperatur liegen |
 | Mindestfeuchte innen | 55 % | Darunter wird nicht gelüftet |
+| Mindest-Ladezustand | 20 % | Nur bei Batterie: darunter wird nicht eingeschaltet und ein laufender Lüfter ausgeschaltet; wieder frei ab Grenze + 5 % |
 
 ### Optionen (über „Konfigurieren“)
 
@@ -121,7 +125,7 @@ Die Schwellwerte sind eigene Entitäten des Geräts und lassen sich jederzeit im
 | Nachtruhe von / bis | 00:00 / 06:00 | Auch über Mitternacht möglich, z. B. 22:00–06:00 |
 | Notify-Entitäten | – | z. B. `notify.telegram_bot_…` |
 | Notify-Dienste | – | z. B. `mobile_app_handy` |
-| Benachrichtigen bei | ein, aus, Pause, Nachtruhe | Zusätzlich wählbar: Lüften wegen Kondensationsgefahr verhindert |
+| Benachrichtigen bei | ein, aus, Pause, Nachtruhe, niedriger Ladezustand | Zusätzlich wählbar: Lüften wegen Kondensationsgefahr verhindert |
 
 Ohne Notify-Ziel werden keine Nachrichten verschickt.
 
@@ -144,7 +148,8 @@ Die Namen der Entitäten folgen der Sprache von Home Assistant (Deutsch oder Eng
 | `binary_sensor.keller_nachtruhe` | An, während die Nachtruhe aktiv ist |
 | `binary_sensor.keller_zwangspause` | An, während der Zwangspause |
 | `switch.keller_automatik` | Steuerung an/aus; beim Ausschalten bleibt der Lüfter im aktuellen Zustand |
-| `number.keller_…` | Die vier Schwellwerte (siehe oben) |
+| `binary_sensor.keller_ladezustand_zu_niedrig` | Nur bei Batterie: an, solange der Ladezustand das Lüften sperrt |
+| `number.keller_…` | Die Schwellwerte (siehe oben); „Mindest-Ladezustand“ nur bei Batterie |
 
 Schwellwerte, Automatik-Status und eine laufende Pause bleiben über Neustarts erhalten.
 
@@ -159,12 +164,15 @@ Die Integration wertet bei jeder Änderung der Sensoren und zusätzlich jede Min
 1. **Lüfter nicht erreichbar** oder **Automatik aus** → nichts tun.
 2. **Nachtruhe aktiv** → Lüfter aus und nicht einschalten.
 3. **Maximale Laufzeit erreicht** → Lüfter aus, Zwangspause starten.
-4. **Messwerte ungültig** → nichts schalten.
-5. **Lüfter läuft** → ausschalten, sobald
+4. **Nur bei Batterie:**
+   - Ladezustand unter der Grenze → Lüfter aus und nicht einschalten. Freigabe erst wieder ab Grenze + 5 %, damit der Lüfter nicht ständig an- und ausgeht.
+   - Ladezustand unbekannt → nicht einschalten; ein laufender Lüfter wird normal weitergesteuert.
+5. **Messwerte ungültig** → nichts schalten.
+6. **Lüfter läuft** → ausschalten, sobald
    - die Feuchte innen unter die Mindestfeuchte fällt, **oder**
    - die Differenz unter den Ausschalt-Puffer fällt, **oder**
    - der Taupunkt außen die Wandtemperatur erreicht.
-6. **Lüfter steht** → einschalten, wenn
+7. **Lüfter steht** → einschalten, wenn
    - keine Zwangspause läuft, **und**
    - die Feuchte innen mindestens der Mindestfeuchte entspricht, **und**
    - die Differenz größer als der Einschalt-Puffer ist, **und**
@@ -208,7 +216,7 @@ actions:
       message: "🌙 Kellerlüftung pausiert für die Nachtruhe."
 ```
 
-Mögliche Codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humidity`, `condensation`, `invalid`, `disabled`, `fan_unavailable`, `error`.
+Mögliche Codes: `running`, `off`, `pause`, `night`, `difference_low`, `min_humidity`, `condensation`, `invalid`, `disabled`, `fan_unavailable`, `battery_low`, `battery_unknown`, `error`.
 
 ## Icon
 

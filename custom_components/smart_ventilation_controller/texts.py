@@ -36,6 +36,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "condensation": "⚠️ Inaktiv – Kondensationsgefahr ({detail})",
         "condensation_message": "⚠️ {title}: Lüften wäre sinnvoll, aber Kondensationsgefahr ({detail})",
         "on_message": "💨 🟢 {title}: Lüfter eingeschaltet\n{values}",
+        "battery_low": "🔋 Inaktiv – Ladezustand zu niedrig ({level:.0f} %, Freigabe ab {release:.0f} %)",
+        "battery_low_message": (
+            "🔋 {title}: Lüfter wegen niedrigem Ladezustand ausgeschaltet "
+            "({level:.0f} %, Grenze {min_battery:.0f} %)"
+        ),
+        "battery_unknown": "🔋 Inaktiv – Ladezustand unbekannt",
         "values": (
             "Innen: {in_t:.1f} °C / {in_rh:.1f} % → {in_ah:.2f} g/m³\n"
             "Außen: {out_t:.1f} °C / {out_rh:.1f} % → {out_ah:.2f} g/m³\n"
@@ -74,6 +80,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "⚠️ {title}: ventilating would help, but there is a condensation risk ({detail})"
         ),
         "on_message": "💨 🟢 {title}: fan turned on\n{values}",
+        "battery_low": "🔋 Inactive – battery level too low ({level:.0f} %, resumes at {release:.0f} %)",
+        "battery_low_message": (
+            "🔋 {title}: fan turned off due to low battery ({level:.0f} %, limit {min_battery:.0f} %)"
+        ),
+        "battery_unknown": "🔋 Inactive – battery level unknown",
         "values": (
             "Indoor: {in_t:.1f} °C / {in_rh:.1f} % → {in_ah:.2f} g/m³\n"
             "Outdoor: {out_t:.1f} °C / {out_rh:.1f} % → {out_ah:.2f} g/m³\n"

@@ -13,6 +13,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
+    NUM_MIN_BATTERY,
     NUM_BUFFER_OFF,
     NUM_BUFFER_ON,
     NUM_DEWPOINT_MARGIN,
@@ -69,6 +70,21 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
     ),
 )
 
+# Nur bei Batteriebetrieb
+BATTERY_NUMBERS: tuple[NumberEntityDescription, ...] = (
+    NumberEntityDescription(
+        key=NUM_MIN_BATTERY,
+        translation_key=NUM_MIN_BATTERY,
+        icon="mdi:battery-alert-variant-outline",
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement=PERCENTAGE,
+        mode=NumberMode.SLIDER,
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -76,7 +92,10 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     controller = entry.runtime_data
-    async_add_entities(SmartVentilationNumber(controller, description) for description in NUMBERS)
+    descriptions = NUMBERS + (BATTERY_NUMBERS if controller.uses_battery else ())
+    async_add_entities(
+        SmartVentilationNumber(controller, description) for description in descriptions
+    )
 
 
 class SmartVentilationNumber(SmartVentilationEntity, NumberEntity):

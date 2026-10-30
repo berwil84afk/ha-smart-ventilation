@@ -1,4 +1,4 @@
-"""Binärsensoren: Lüften sinnvoll, Kondensationsgefahr, Nachtruhe, Zwangspause."""
+"""Binärsensoren: Lüften sinnvoll, Kondensationsgefahr, Nachtruhe, Zwangspause, Ladezustand."""
 
 from __future__ import annotations
 
@@ -49,6 +49,16 @@ BINARY_SENSORS: tuple[SmartVentilationBinarySensorDescription, ...] = (
     ),
 )
 
+# Nur bei Batteriebetrieb; an, solange der Ladezustand das Lüften sperrt
+BATTERY_BINARY_SENSORS: tuple[SmartVentilationBinarySensorDescription, ...] = (
+    SmartVentilationBinarySensorDescription(
+        key="battery_low",
+        translation_key="battery_low",
+        device_class=BinarySensorDeviceClass.BATTERY,
+        value_fn=lambda c: c.battery_blocked,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -56,8 +66,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     controller = entry.runtime_data
+    descriptions = BINARY_SENSORS + (BATTERY_BINARY_SENSORS if controller.uses_battery else ())
     async_add_entities(
-        SmartVentilationBinarySensor(controller, description) for description in BINARY_SENSORS
+        SmartVentilationBinarySensor(controller, description) for description in descriptions
     )
 
 

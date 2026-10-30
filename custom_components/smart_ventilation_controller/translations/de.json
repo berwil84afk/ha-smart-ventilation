@@ -12,12 +12,16 @@
           "outdoor_humidity": "Relative Feuchte außen",
           "wall_temperature": "Wandtemperatur (optional)",
           "fan_entity": "Lüfter",
-          "additional_fans": "Weitere Lüfter (optional)"
+          "additional_fans": "Weitere Lüfter (optional)",
+          "power_source": "Stromquelle",
+          "battery_level": "Ladezustand (nur bei Batterie)"
         },
         "data_description": {
           "wall_temperature": "Für den Kondensationsschutz. Ohne Angabe wird die Innentemperatur verwendet.",
           "fan_entity": "Schalter, Ventilator, Licht oder Input-Boolean, der den Lüfter schaltet.",
-          "additional_fans": "Werden immer zusammen mit dem Hauptlüfter geschaltet, z. B. Zu- und Abluft."
+          "additional_fans": "Werden immer zusammen mit dem Hauptlüfter geschaltet, z. B. Zu- und Abluft.",
+          "power_source": "Bei Batterie wird zusätzlich auf den Ladezustand geachtet.",
+          "battery_level": "Sensor mit dem Ladezustand in %, z. B. eines Akkus oder einer Powerstation."
         }
       },
       "reconfigure": {
@@ -29,13 +33,22 @@
           "outdoor_humidity": "Relative Feuchte außen",
           "wall_temperature": "Wandtemperatur (optional)",
           "fan_entity": "Lüfter",
-          "additional_fans": "Weitere Lüfter (optional)"
+          "additional_fans": "Weitere Lüfter (optional)",
+          "power_source": "Stromquelle",
+          "battery_level": "Ladezustand (nur bei Batterie)"
+        },
+        "data_description": {
+          "power_source": "Bei Batterie wird zusätzlich auf den Ladezustand geachtet.",
+          "battery_level": "Sensor mit dem Ladezustand in %, z. B. eines Akkus oder einer Powerstation."
         }
       }
     },
     "abort": {
       "already_configured": "Dieser Lüfter wird bereits von einem Smart ventilation controller gesteuert.",
       "reconfigure_successful": "Die Konfiguration wurde aktualisiert."
+    },
+    "error": {
+      "battery_level_required": "Bei Stromquelle „Batterie“ wird ein Ladezustand-Sensor benötigt."
     }
   },
   "options": {
@@ -71,7 +84,14 @@
         "turn_off": "Lüfter ausgeschaltet",
         "pause": "Zwangspause gestartet",
         "night": "Abschaltung wegen Nachtruhe",
-        "condensation": "Lüften wegen Kondensationsgefahr verhindert"
+        "condensation": "Lüften wegen Kondensationsgefahr verhindert",
+        "battery_low": "Abschaltung wegen niedrigem Ladezustand"
+      }
+    },
+    "power_source": {
+      "options": {
+        "grid": "Stromnetz",
+        "battery": "Batterie"
       }
     }
   },
@@ -88,6 +108,9 @@
       },
       "ventilation_useful": {
         "name": "Lüften sinnvoll"
+      },
+      "battery_low": {
+        "name": "Ladezustand zu niedrig"
       }
     },
     "number": {
@@ -102,6 +125,9 @@
       },
       "min_humidity": {
         "name": "Mindestfeuchte innen"
+      },
+      "min_battery": {
+        "name": "Mindest-Ladezustand"
       }
     },
     "sensor": {

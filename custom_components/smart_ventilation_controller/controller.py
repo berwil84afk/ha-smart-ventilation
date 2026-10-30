@@ -36,6 +36,7 @@ from .calc import absolute_humidity, dew_point
 from .texts import get_texts
 from .const import (
     CONF_ADDITIONAL_FANS,
+    CONF_BATTERY_LEVEL,
     CONF_FAN,
     CONF_INDOOR_HUM,
     CONF_INDOOR_TEMP,
@@ -49,19 +50,24 @@ from .const import (
     CONF_OUTDOOR_HUM,
     CONF_OUTDOOR_TEMP,
     CONF_PAUSE,
+    CONF_POWER_SOURCE,
     CONF_WALL_TEMP,
     DEFAULT_OPTIONS,
+    BATTERY_HYSTERESIS,
     DEFAULT_VALUES,
     DOMAIN,
     EVENT_CONDENSATION,
     EVENT_NIGHT,
     EVENT_OFF,
     EVENT_ON,
+    EVENT_BATTERY,
     EVENT_PAUSE,
     NUM_BUFFER_OFF,
     NUM_BUFFER_ON,
     NUM_DEWPOINT_MARGIN,
+    NUM_MIN_BATTERY,
     NUM_MIN_HUMIDITY,
+    POWER_BATTERY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -137,6 +143,8 @@ class SmartVentilationController:
         self.ventilation_useful = False
         self.condensation_risk = False
         self.night_active = False
+        self.battery_level: float | None = None
+        self.battery_blocked = False
         self._store: Store[dict[str, Any]] = Store(
             hass, STORAGE_VERSION, f"{DOMAIN}.{entry.entry_id}"
         )
@@ -144,6 +152,10 @@ class SmartVentilationController:
         self._listeners: list[CALLBACK_TYPE] = []
         self._unsubs: list[CALLBACK_TYPE] = []
         self._available_fans: list[str] = []
+
+    @property
+    def uses_battery(self) -> bool:
+        return self.config.get(CONF_POWER_SOURCE) == POWER_BATTERY
 
     @property
     def fan_entities(self) -> list[str]:
@@ -173,6 +185,7 @@ class SmartVentilationController:
                 self.config[CONF_OUTDOOR_TEMP],
                 self.config[CONF_OUTDOOR_HUM],
                 self.config.get(CONF_WALL_TEMP),
+                self.config.get(CONF_BATTERY_LEVEL) if self.uses_battery else None,
                 *self.fan_entities,
             )
             if entity_id
@@ -249,6 +262,7 @@ class SmartVentilationController:
             self.runtime = now - min(state.last_changed for state in running) if running else None
 
             self.night_active = self._in_night_window(now.time())
+            self._update_battery()
             if self.pause_until is not None and now >= self.pause_until:
                 self.pause_until = None
                 self._save()
@@ -322,6 +336,34 @@ class SmartVentilationController:
                 message=t("max_runtime_message", title=title, max_runtime=max_runtime, pause=pause),
                 start_pause=pause > 0,
             )
+
+        if self.uses_battery:
+            if self.battery_level is None:
+                # Ohne gültigen Ladezustand nicht einschalten; ein laufender Lüfter
+                # wird normal weitergesteuert (Maximallaufzeit greift)
+                if not fan_on:
+                    return Decision("battery_unknown", t("battery_unknown"))
+            elif self.battery_blocked:
+                min_battery = v[NUM_MIN_BATTERY]
+                status = t(
+                    "battery_low",
+                    level=self.battery_level,
+                    release=min_battery + BATTERY_HYSTERESIS,
+                )
+                if fan_on:
+                    return Decision(
+                        "battery_low",
+                        status,
+                        turn=False,
+                        event=EVENT_BATTERY,
+                        message=t(
+                            "battery_low_message",
+                            title=title,
+                            level=self.battery_level,
+                            min_battery=min_battery,
+                        ),
+                    )
+                return Decision("battery_low", status)
 
         if not r.valid:
             return Decision("invalid", t("invalid_running" if fan_on else "invalid"))
@@ -416,6 +458,22 @@ class SmartVentilationController:
         if unit in (UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.KELVIN):
             value = TemperatureConverter.convert(value, unit, UnitOfTemperature.CELSIUS)
         return value
+
+    def _update_battery(self) -> None:
+        """Ladezustand lesen; Sperre unter der Grenze, Freigabe erst ab Grenze + Hysterese."""
+        if not self.uses_battery:
+            self.battery_level = None
+            self.battery_blocked = False
+            return
+        value = self._read_float(self.config.get(CONF_BATTERY_LEVEL))
+        self.battery_level = value if value is not None and 0 <= value <= 100 else None
+        if self.battery_level is None:
+            return
+        min_battery = self.values[NUM_MIN_BATTERY]
+        if self.battery_level < min_battery:
+            self.battery_blocked = True
+        elif self.battery_level >= min_battery + BATTERY_HYSTERESIS:
+            self.battery_blocked = False
 
     def _read_humidity(self, entity_id: str | None) -> float | None:
         # 0 % (z. B. hp2000-Aussetzer) und unplausible Werte gelten als ungültig
