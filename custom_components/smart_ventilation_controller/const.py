@@ -55,6 +55,7 @@ DEFAULT_OPTIONS = {
     CONF_NOTIFY_ENTITIES: [],
     CONF_NOTIFY_SERVICES: [],
     CONF_NOTIFY_EVENTS: [EVENT_ON, EVENT_OFF, EVENT_PAUSE, EVENT_NIGHT, EVENT_BATTERY],
+    CONF_POWER_SOURCE: POWER_GRID,
 }
 
 # Schwellwerte, im Dashboard über Number-Entitäten verstellbar

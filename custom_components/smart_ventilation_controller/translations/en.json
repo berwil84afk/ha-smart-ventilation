@@ -33,13 +33,7 @@
           "outdoor_humidity": "Outdoor relative humidity",
           "wall_temperature": "Wall temperature (optional)",
           "fan_entity": "Fan",
-          "additional_fans": "Additional fans (optional)",
-          "power_source": "Power source",
-          "battery_level": "Battery level (battery only)"
-        },
-        "data_description": {
-          "power_source": "With a battery, the battery level is taken into account as well.",
-          "battery_level": "Sensor with the battery level in %, e.g. of a battery or power station."
+          "additional_fans": "Additional fans (optional)"
         }
       }
     },
@@ -57,6 +51,8 @@
         "title": "Smart ventilation controller – options",
         "description": "Thresholds (buffers, dew point margin, minimum humidity) are set directly on the device's entities.",
         "data": {
+          "power_source": "Power source",
+          "battery_level": "Battery level (battery only)",
           "max_runtime": "Maximum continuous runtime",
           "pause_duration": "Forced pause after maximum runtime",
           "night_enabled": "Enable quiet hours",
@@ -67,6 +63,8 @@
           "notify_events": "Notify on"
         },
         "data_description": {
+          "power_source": "With a battery, the battery level is taken into account as well.",
+          "battery_level": "Sensor with the battery level in %, e.g. of a battery or power station.",
           "max_runtime": "0 = unlimited.",
           "pause_duration": "0 = no pause.",
           "night_enabled": "During quiet hours the fan is turned off and not turned on.",
@@ -75,6 +73,9 @@
           "notify_services": "Legacy services such as mobile_app_phone."
         }
       }
+    },
+    "error": {
+      "battery_level_required": "A battery level sensor is required when the power source is “Battery”."
     }
   },
   "selector": {

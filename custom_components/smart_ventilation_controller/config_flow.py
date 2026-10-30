@@ -60,6 +60,17 @@ def _sensor_schema() -> vol.Schema:
             vol.Optional(CONF_ADDITIONAL_FANS, default=[]): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain=FAN_DOMAINS, multiple=True)
             ),
+        }
+    )
+
+
+# Stromquelle wird in den Optionen gespeichert, damit sie unter „Konfigurieren“ änderbar ist
+POWER_KEYS = (CONF_POWER_SOURCE, CONF_BATTERY_LEVEL)
+
+
+def _power_schema() -> vol.Schema:
+    return vol.Schema(
+        {
             vol.Required(CONF_POWER_SOURCE, default=POWER_GRID): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=POWER_SOURCES,
@@ -67,7 +78,9 @@ def _sensor_schema() -> vol.Schema:
                     translation_key=CONF_POWER_SOURCE,
                 )
             ),
-            vol.Optional(CONF_BATTERY_LEVEL): sensor,
+            vol.Optional(CONF_BATTERY_LEVEL): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain="sensor")
+            ),
         }
     )
 
@@ -111,13 +124,16 @@ class SmartVentilationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(user_input[CONF_FAN])
                 self._abort_if_unique_id_configured()
                 title = user_input.pop(CONF_NAME)
+                power = {key: user_input.pop(key) for key in POWER_KEYS if key in user_input}
                 return self.async_create_entry(
-                    title=title, data=user_input, options=dict(DEFAULT_OPTIONS)
+                    title=title, data=user_input, options={**DEFAULT_OPTIONS, **power}
                 )
 
         default_name = "Keller" if self.hass.config.language.startswith("de") else "Basement"
-        schema = vol.Schema({vol.Required(CONF_NAME, default=default_name): str}).extend(
-            _sensor_schema().schema
+        schema = (
+            vol.Schema({vol.Required(CONF_NAME, default=default_name): str})
+            .extend(_sensor_schema().schema)
+            .extend(_power_schema().schema)
         )
         return self.async_show_form(
             step_id="user",
@@ -129,35 +145,33 @@ class SmartVentilationConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         entry = self._get_reconfigure_entry()
-        errors: dict[str, str] = {}
         if user_input is not None:
-            if not (errors := _validate(user_input)):
-                return self.async_update_reload_and_abort(
-                    entry, unique_id=user_input[CONF_FAN], data=user_input
-                )
+            kept = {key: entry.data[key] for key in POWER_KEYS if key in entry.data}
+            return self.async_update_reload_and_abort(
+                entry, unique_id=user_input[CONF_FAN], data={**kept, **user_input}
+            )
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=self.add_suggested_values_to_schema(
-                _sensor_schema(), user_input or entry.data
-            ),
-            errors=errors,
+            data_schema=self.add_suggested_values_to_schema(_sensor_schema(), entry.data),
         )
 
 
 class SmartVentilationOptionsFlow(OptionsFlow):
-    """Optionen: Laufzeit, Pause, Nachtruhe, Benachrichtigungen."""
+    """Optionen: Stromquelle, Laufzeit, Pause, Nachtruhe, Benachrichtigungen."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
+            if not (errors := _validate(user_input)):
+                return self.async_create_entry(data=user_input)
 
         legacy_notify = sorted(
             service
             for service in self.hass.services.async_services().get("notify", {})
             if service not in ("send_message", "persistent_notification")
         )
-        schema = vol.Schema(
+        schema = _power_schema().extend(
             {
                 vol.Required(CONF_MAX_RUNTIME): _minutes_selector(),
                 vol.Required(CONF_PAUSE): _minutes_selector(),
@@ -185,9 +199,13 @@ class SmartVentilationOptionsFlow(OptionsFlow):
                 ),
             }
         )
+        # Einträge aus Version 1.2.0 haben die Stromquelle noch in data
+        entry = self.config_entry
+        legacy_power = {key: entry.data[key] for key in POWER_KEYS if key in entry.data}
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(
-                schema, {**DEFAULT_OPTIONS, **self.config_entry.options}
+                schema, user_input or {**DEFAULT_OPTIONS, **legacy_power, **entry.options}
             ),
+            errors=errors,
         )

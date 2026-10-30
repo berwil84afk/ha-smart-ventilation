@@ -33,13 +33,7 @@
           "outdoor_humidity": "Relative Feuchte außen",
           "wall_temperature": "Wandtemperatur (optional)",
           "fan_entity": "Lüfter",
-          "additional_fans": "Weitere Lüfter (optional)",
-          "power_source": "Stromquelle",
-          "battery_level": "Ladezustand (nur bei Batterie)"
-        },
-        "data_description": {
-          "power_source": "Bei Batterie wird zusätzlich auf den Ladezustand geachtet.",
-          "battery_level": "Sensor mit dem Ladezustand in %, z. B. eines Akkus oder einer Powerstation."
+          "additional_fans": "Weitere Lüfter (optional)"
         }
       }
     },
@@ -57,6 +51,8 @@
         "title": "Smart ventilation controller – Optionen",
         "description": "Die Schwellwerte (Puffer, Taupunkt-Abstand, Mindestfeuchte) stellst du direkt an den Entitäten des Geräts ein.",
         "data": {
+          "power_source": "Stromquelle",
+          "battery_level": "Ladezustand (nur bei Batterie)",
           "max_runtime": "Maximale Laufzeit am Stück",
           "pause_duration": "Zwangspause nach Maximallaufzeit",
           "night_enabled": "Nachtruhe aktivieren",
@@ -67,6 +63,8 @@
           "notify_events": "Benachrichtigen bei"
         },
         "data_description": {
+          "power_source": "Bei Batterie wird zusätzlich auf den Ladezustand geachtet.",
+          "battery_level": "Sensor mit dem Ladezustand in %, z. B. eines Akkus oder einer Powerstation.",
           "max_runtime": "0 = unbegrenzt.",
           "pause_duration": "0 = keine Pause, der Lüfter darf sofort wieder einschalten.",
           "night_enabled": "Während der Nachtruhe wird der Lüfter ausgeschaltet und nicht eingeschaltet.",
@@ -75,6 +73,9 @@
           "notify_services": "Klassische Dienste wie mobile_app_handy."
         }
       }
+    },
+    "error": {
+      "battery_level_required": "Bei Stromquelle „Batterie“ wird ein Ladezustand-Sensor benötigt."
     }
   },
   "selector": {

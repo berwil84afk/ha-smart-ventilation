@@ -95,7 +95,7 @@ Or: *Settings → Devices & services → Add integration → Smart ventilation c
 1. Enter a **name**, e.g. "Basement". It determines the entity names, e.g. `sensor.basement_status`.
 2. Select the **sensors** for indoor and outdoor, optionally a wall temperature sensor.
 3. Select the **fan**, and optionally more fans under "Additional fans" that are switched along with it.
-4. Choose the **power source**: "Grid" (default) or "Battery". For a battery, also select the **battery level** sensor.
+4. Choose the **power source**: "Grid" (default) or "Battery". For a battery, also select the **battery level** sensor. Both can be changed later under **Configure**.
 
 Done. Control starts right away with sensible defaults.
 
@@ -119,6 +119,8 @@ The thresholds are entities of the device and can be changed on the dashboard at
 
 | Option | Default | Meaning |
 |---|---|---|
+| Power source | Grid | "Grid" or "Battery" |
+| Battery level | – | Battery only: sensor with the battery level in % (required) |
 | Maximum continuous runtime | 60 min | Forced pause afterwards; 0 = unlimited |
 | Forced pause | 60 min | Minimum pause after the maximum runtime; 0 = no pause |
 | Enable quiet hours | off | Turns the fan off during the chosen time window |

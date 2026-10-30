@@ -95,7 +95,7 @@ Oder: *Einstellungen → Geräte & Dienste → Integration hinzufügen → Smart
 1. **Name** vergeben, z. B. „Keller“. Er bestimmt die Namen der Entitäten, z. B. `sensor.keller_status`.
 2. **Sensoren** für innen und außen auswählen, optional einen Wandtemperatur-Sensor.
 3. **Lüfter** auswählen, optional unter „Weitere Lüfter“ zusätzliche Lüfter, die gemeinsam mitgeschaltet werden.
-4. **Stromquelle** wählen: „Stromnetz“ (Standard) oder „Batterie“. Bei Batterie zusätzlich den **Ladezustand**-Sensor auswählen.
+4. **Stromquelle** wählen: „Stromnetz“ (Standard) oder „Batterie“. Bei Batterie zusätzlich den **Ladezustand**-Sensor auswählen. Beides lässt sich später unter **Konfigurieren** ändern.
 
 Fertig. Die Steuerung läuft sofort mit sinnvollen Standardwerten.
 
@@ -119,6 +119,8 @@ Die Schwellwerte sind eigene Entitäten des Geräts und lassen sich jederzeit im
 
 | Option | Standard | Bedeutung |
 |---|---|---|
+| Stromquelle | Stromnetz | „Stromnetz“ oder „Batterie“ |
+| Ladezustand | – | Nur bei Batterie: Sensor mit dem Ladezustand in % (Pflicht) |
 | Maximale Laufzeit am Stück | 60 min | Danach Zwangspause; 0 = unbegrenzt |
 | Zwangspause | 60 min | Mindestpause nach der Maximallaufzeit; 0 = keine Pause |
 | Nachtruhe aktivieren | aus | Schaltet den Lüfter im gewählten Zeitfenster ab |
