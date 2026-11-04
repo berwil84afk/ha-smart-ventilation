@@ -23,7 +23,7 @@ from homeassistant.core import (
     HomeAssistant,
     callback,
 )
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.event import (
     async_track_state_change_event,
     async_track_time_interval,
@@ -67,6 +67,7 @@ from .const import (
     NUM_DEWPOINT_MARGIN,
     NUM_MIN_BATTERY,
     NUM_MIN_HUMIDITY,
+    NUM_MIN_HUMIDITY_OFF,
     POWER_BATTERY,
 )
 
@@ -134,6 +135,7 @@ class SmartVentilationController:
         self.entry = entry
         self.config: dict[str, Any] = {**DEFAULT_OPTIONS, **entry.data, **entry.options}
         self.values: dict[str, float] = dict(DEFAULT_VALUES)
+        self.values[NUM_MIN_HUMIDITY_OFF] = self.values[NUM_MIN_HUMIDITY]
         self.automatic = True
         self.pause_until: datetime | None = None
         self.readings: Readings | None = None
@@ -168,9 +170,12 @@ class SmartVentilationController:
     async def async_load(self) -> None:
         """Gespeicherte Schwellwerte, Automatik-Status und Pause laden."""
         data = await self._store.async_load() or {}
-        for key, value in data.get("values", {}).items():
+        stored = data.get("values", {})
+        for key, value in stored.items():
             if key in self.values:
                 self.values[key] = float(value)
+        if NUM_MIN_HUMIDITY_OFF not in stored:
+            self.values[NUM_MIN_HUMIDITY_OFF] = self.values[NUM_MIN_HUMIDITY]
         self.automatic = data.get("automatic", True)
         if (pause_until := data.get("pause_until")) is not None:
             self.pause_until = dt_util.parse_datetime(pause_until)
@@ -217,6 +222,14 @@ class SmartVentilationController:
     # --- Änderungen aus Entitäten -------------------------------------------
 
     async def async_set_value(self, key: str, value: float) -> None:
+        # Aus-Grenze darf nicht über der Ein-Grenze liegen (Hysterese)
+        values = {**self.values, key: value}
+        for on_key, off_key, error in (
+            (NUM_BUFFER_ON, NUM_BUFFER_OFF, "buffer_order"),
+            (NUM_MIN_HUMIDITY, NUM_MIN_HUMIDITY_OFF, "humidity_order"),
+        ):
+            if key in (on_key, off_key) and values[off_key] > values[on_key]:
+                raise ServiceValidationError(translation_domain=DOMAIN, translation_key=error)
         self.values[key] = value
         self._save()
         await self.async_evaluate()
@@ -372,7 +385,7 @@ class SmartVentilationController:
         min_rh = v[NUM_MIN_HUMIDITY]
 
         if fan_on:
-            if r.indoor_rh < min_rh:
+            if r.indoor_rh < v[NUM_MIN_HUMIDITY_OFF]:
                 reason = t("reason_min_humidity")
             elif diff < v[NUM_BUFFER_OFF]:
                 reason = t("reason_buffer_off")

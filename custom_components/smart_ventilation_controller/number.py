@@ -9,7 +9,6 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -18,6 +17,7 @@ from .const import (
     NUM_BUFFER_ON,
     NUM_DEWPOINT_MARGIN,
     NUM_MIN_HUMIDITY,
+    NUM_MIN_HUMIDITY_OFF,
     UNIT_ABSOLUTE_HUMIDITY,
 )
 from .controller import SmartVentilationConfigEntry
@@ -68,6 +68,17 @@ NUMBERS: tuple[NumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         entity_category=EntityCategory.CONFIG,
     ),
+    NumberEntityDescription(
+        key=NUM_MIN_HUMIDITY_OFF,
+        translation_key=NUM_MIN_HUMIDITY_OFF,
+        icon="mdi:water-percent-alert",
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement=PERCENTAGE,
+        mode=NumberMode.SLIDER,
+        entity_category=EntityCategory.CONFIG,
+    ),
 )
 
 # Nur bei Batteriebetrieb
@@ -104,12 +115,4 @@ class SmartVentilationNumber(SmartVentilationEntity, NumberEntity):
         return self.controller.values[self.entity_description.key]
 
     async def async_set_native_value(self, value: float) -> None:
-        values = self.controller.values
-        key = self.entity_description.key
-        if (key == NUM_BUFFER_OFF and value > values[NUM_BUFFER_ON]) or (
-            key == NUM_BUFFER_ON and value < values[NUM_BUFFER_OFF]
-        ):
-            raise ServiceValidationError(
-                "Der Ausschalt-Puffer muss kleiner oder gleich dem Einschalt-Puffer sein."
-            )
-        await self.controller.async_set_value(key, value)
+        await self.controller.async_set_value(self.entity_description.key, value)

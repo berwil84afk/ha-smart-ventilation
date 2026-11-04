@@ -62,7 +62,8 @@ DEFAULT_OPTIONS = {
 NUM_BUFFER_ON = "buffer_on"
 NUM_BUFFER_OFF = "buffer_off"
 NUM_DEWPOINT_MARGIN = "dewpoint_margin"
-NUM_MIN_HUMIDITY = "min_humidity"
+NUM_MIN_HUMIDITY = "min_humidity"  # Einschalt-Feuchte innen
+NUM_MIN_HUMIDITY_OFF = "min_humidity_off"  # Ausschalt-Feuchte innen
 NUM_MIN_BATTERY = "min_battery"
 
 DEFAULT_VALUES = {
@@ -72,3 +73,6 @@ DEFAULT_VALUES = {
     NUM_MIN_HUMIDITY: 55.0,
     NUM_MIN_BATTERY: 20.0,
 }
+# Ohne gespeicherten Wert startet die Ausschalt-Feuchte gleich der Einschalt-Feuchte,
+# damit sich das Verhalten bestehender Installationen nicht ändert.
+

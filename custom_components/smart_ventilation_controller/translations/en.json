@@ -125,7 +125,10 @@
         "name": "Dew point safety margin"
       },
       "min_humidity": {
-        "name": "Minimum indoor humidity"
+        "name": "Turn-on indoor humidity"
+      },
+      "min_humidity_off": {
+        "name": "Turn-off indoor humidity"
       },
       "min_battery": {
         "name": "Minimum battery level"
@@ -161,6 +164,14 @@
       "automatic": {
         "name": "Automatic mode"
       }
+    }
+  },
+  "exceptions": {
+    "buffer_order": {
+      "message": "The turn-off buffer must not be greater than the turn-on buffer."
+    },
+    "humidity_order": {
+      "message": "The turn-off humidity must not be greater than the turn-on humidity."
     }
   }
 }

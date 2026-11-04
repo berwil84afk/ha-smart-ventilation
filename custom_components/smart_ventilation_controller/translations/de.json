@@ -125,7 +125,10 @@
         "name": "Taupunkt-Sicherheitsabstand"
       },
       "min_humidity": {
-        "name": "Mindestfeuchte innen"
+        "name": "Einschalt-Feuchte innen"
+      },
+      "min_humidity_off": {
+        "name": "Ausschalt-Feuchte innen"
       },
       "min_battery": {
         "name": "Mindest-Ladezustand"
@@ -161,6 +164,14 @@
       "automatic": {
         "name": "Automatik"
       }
+    }
+  },
+  "exceptions": {
+    "buffer_order": {
+      "message": "Der Ausschalt-Puffer darf nicht größer als der Einschalt-Puffer sein."
+    },
+    "humidity_order": {
+      "message": "Die Ausschalt-Feuchte darf nicht größer als die Einschalt-Feuchte sein."
     }
   }
 }

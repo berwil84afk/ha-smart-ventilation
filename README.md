@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="custom_components/smart_ventilation_controller/brand/icon@2x.png" alt="Smart ventilation controller" width="160">
+  <img src="https://raw.githubusercontent.com/berwil84afk/ha-smart-ventilation/main/custom_components/smart_ventilation_controller/brand/icon@2x.png" alt="Smart ventilation controller" width="160">
 </p>
 
 <h1 align="center">Smart ventilation controller</h1>
@@ -9,13 +9,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
   <a href="https://github.com/berwil84afk/ha-smart-ventilation/releases"><img src="https://img.shields.io/github/v/release/berwil84afk/ha-smart-ventilation" alt="Release"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/commits/main"><img src="https://img.shields.io/github/last-commit/berwil84afk/ha-smart-ventilation" alt="Last commit"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/commits/main"><img src="https://img.shields.io/github/commit-activity/m/berwil84afk/ha-smart-ventilation" alt="Commit activity"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/issues"><img src="https://img.shields.io/github/issues/berwil84afk/ha-smart-ventilation" alt="Issues"></a>
+  <a href="https://analytics.home-assistant.io/custom_integrations"><img src="https://img.shields.io/badge/dynamic/json?color=41BDF5&logo=home-assistant&label=Active%20installations&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.smart_ventilation_controller.total" alt="Active installations"></a>
+  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Default-41BDF5.svg" alt="HACS Default"></a>
   <img src="https://img.shields.io/badge/Home%20Assistant-2024.12%2B-18BCF2.svg" alt="Home Assistant 2024.12+">
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/validate.yml"><img src="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/tests.yml"><img src="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
 </p>
 
 <p align="center">
-  <b>🇬🇧 English</b> · <a href="README.de.md">🇩🇪 Deutsch</a>
+  <b>🇬🇧 English</b> · <a href="https://github.com/berwil84afk/ha-smart-ventilation/blob/main/README.de.md">🇩🇪 Deutsch</a>
 </p>
 
 ---
@@ -50,7 +56,7 @@ The Smart ventilation controller does exactly this calculation around the clock 
 
 - **Switches by absolute humidity:** The fan only runs when the indoor air holds noticeably more water than the outdoor air. Separate turn-on and turn-off thresholds (hysteresis) keep the fan from cycling on and off.
 - **Prevents condensation:** If the outdoor dew point is too close to the wall temperature, the fan stays off. Without a wall sensor, the indoor temperature is used as an approximation.
-- **Ventilates only when needed:** Below an adjustable minimum indoor humidity, it does not ventilate, even if the outdoor air is drier.
+- **Ventilates only when needed:** It only starts above an adjustable indoor humidity and stops below a second, lower one (hysteresis), even if the outdoor air is drier.
 - **Protects fan and room:** After a maximum continuous runtime, a forced pause follows. The pause survives a Home Assistant restart.
 - **Optional quiet hours:** The fan stays off during a time window of your choice, also across midnight.
 - **Multiple fans:** Optionally add more fans, e.g. for supply and exhaust air. They are always switched together with the main fan.
@@ -112,7 +118,8 @@ The thresholds are entities of the device and can be changed on the dashboard at
 | Turn-on buffer | 2.5 g/m³ | How much more water the indoor air must hold for the fan to turn on |
 | Turn-off buffer | 1.0 g/m³ | If the difference drops below this, the fan turns off again |
 | Dew point safety margin | 2 °C | How far the outdoor dew point must stay below the wall temperature |
-| Minimum indoor humidity | 55 % | No ventilation below this value |
+| Turn-on indoor humidity | 55 % | The fan only turns on at or above this value (formerly "Minimum indoor humidity") |
+| Turn-off indoor humidity | = turn-on value | A running fan turns off below this value; set it lower for a hysteresis, e.g. 65 % on / 60 % off |
 | Minimum battery level | 20 % | Battery only: below this, the fan is not turned on and a running fan is turned off; released again at limit + 5 % |
 
 ### Options (via "Configure")
@@ -171,12 +178,12 @@ The integration evaluates on every sensor change and additionally once a minute,
    - Battery level unknown → do not turn on; a running fan is controlled as usual.
 5. **Readings invalid** → do not switch.
 6. **Fan running** → turn off as soon as
-   - indoor humidity drops below the minimum, **or**
+   - indoor humidity drops below the turn-off humidity, **or**
    - the difference drops below the turn-off buffer, **or**
    - the outdoor dew point reaches the wall temperature.
 7. **Fan off** → turn on if
    - no forced pause is active, **and**
-   - indoor humidity is at least the minimum, **and**
+   - indoor humidity is at least the turn-on humidity, **and**
    - the difference is greater than the turn-on buffer, **and**
    - the outdoor dew point is at least the safety margin below the wall temperature.
 
@@ -230,4 +237,4 @@ Please report bugs or ideas as an [issue](https://github.com/berwil84afk/ha-smar
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [MIT License](https://github.com/berwil84afk/ha-smart-ventilation/blob/main/LICENSE).

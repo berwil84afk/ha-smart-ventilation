@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="custom_components/smart_ventilation_controller/brand/icon@2x.png" alt="Smart ventilation controller" width="160">
+  <img src="https://raw.githubusercontent.com/berwil84afk/ha-smart-ventilation/main/custom_components/smart_ventilation_controller/brand/icon@2x.png" alt="Smart ventilation controller" width="160">
 </p>
 
 <h1 align="center">Smart ventilation controller</h1>
@@ -9,13 +9,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
   <a href="https://github.com/berwil84afk/ha-smart-ventilation/releases"><img src="https://img.shields.io/github/v/release/berwil84afk/ha-smart-ventilation" alt="Release"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/commits/main"><img src="https://img.shields.io/github/last-commit/berwil84afk/ha-smart-ventilation" alt="Last commit"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/commits/main"><img src="https://img.shields.io/github/commit-activity/m/berwil84afk/ha-smart-ventilation" alt="Commit activity"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/issues"><img src="https://img.shields.io/github/issues/berwil84afk/ha-smart-ventilation" alt="Issues"></a>
+  <a href="https://analytics.home-assistant.io/custom_integrations"><img src="https://img.shields.io/badge/dynamic/json?color=41BDF5&logo=home-assistant&label=Active%20installations&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.smart_ventilation_controller.total" alt="Active installations"></a>
+  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Default-41BDF5.svg" alt="HACS Default"></a>
   <img src="https://img.shields.io/badge/Home%20Assistant-2024.12%2B-18BCF2.svg" alt="Home Assistant 2024.12+">
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/validate.yml"><img src="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/tests.yml"><img src="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
 </p>
 
 <p align="center">
-  <a href="README.md">🇬🇧 English</a> · <b>🇩🇪 Deutsch</b>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/blob/main/README.md">🇬🇧 English</a> · <b>🇩🇪 Deutsch</b>
 </p>
 
 ---
@@ -50,7 +56,7 @@ Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uh
 
 - **Schaltet nach absoluter Feuchte:** Der Lüfter läuft nur, wenn die Raumluft spürbar mehr Wasser enthält als die Außenluft. Ein- und Ausschaltschwelle sind getrennt (Hysterese), damit der Lüfter nicht ständig an und aus geht.
 - **Schützt vor Kondenswasser:** Liegt der Taupunkt der Außenluft zu nah an der Wandtemperatur, bleibt der Lüfter aus. Ohne eigenen Wandsensor wird die Raumtemperatur als Näherung verwendet.
-- **Lüftet nur bei Bedarf:** Unterhalb einer einstellbaren Mindestfeuchte im Raum wird nicht gelüftet, auch wenn die Außenluft trockener wäre.
+- **Lüftet nur bei Bedarf:** Eingeschaltet wird erst ab einer einstellbaren Feuchte im Raum, ausgeschaltet unter einer zweiten, niedrigeren Grenze (Hysterese), auch wenn die Außenluft trockener wäre.
 - **Schont Lüfter und Raum:** Nach einer maximalen Laufzeit am Stück folgt eine Zwangspause. Die Pause übersteht auch einen Neustart von Home Assistant.
 - **Optionale Nachtruhe:** In einem frei wählbaren Zeitfenster, auch über Mitternacht, bleibt der Lüfter aus.
 - **Mehrere Lüfter:** Optional lassen sich weitere Lüfter hinzufügen, z. B. für Zu- und Abluft. Sie werden immer gemeinsam mit dem Hauptlüfter geschaltet.
@@ -112,7 +118,8 @@ Die Schwellwerte sind eigene Entitäten des Geräts und lassen sich jederzeit im
 | Einschalt-Puffer | 2,5 g/m³ | So viel mehr Wasser muss die Raumluft enthalten, damit der Lüfter einschaltet |
 | Ausschalt-Puffer | 1,0 g/m³ | Fällt die Differenz darunter, schaltet der Lüfter wieder aus |
 | Taupunkt-Sicherheitsabstand | 2 °C | So weit muss der Taupunkt außen unter der Wandtemperatur liegen |
-| Mindestfeuchte innen | 55 % | Darunter wird nicht gelüftet |
+| Einschalt-Feuchte innen | 55 % | Erst ab diesem Wert wird eingeschaltet (früher „Mindestfeuchte innen“) |
+| Ausschalt-Feuchte innen | = Einschalt-Wert | Darunter wird ein laufender Lüfter ausgeschaltet; niedriger einstellen für eine Hysterese, z. B. 65 % ein / 60 % aus |
 | Mindest-Ladezustand | 20 % | Nur bei Batterie: darunter wird nicht eingeschaltet und ein laufender Lüfter ausgeschaltet; wieder frei ab Grenze + 5 % |
 
 ### Optionen (über „Konfigurieren“)
@@ -171,12 +178,12 @@ Die Integration wertet bei jeder Änderung der Sensoren und zusätzlich jede Min
    - Ladezustand unbekannt → nicht einschalten; ein laufender Lüfter wird normal weitergesteuert.
 5. **Messwerte ungültig** → nichts schalten.
 6. **Lüfter läuft** → ausschalten, sobald
-   - die Feuchte innen unter die Mindestfeuchte fällt, **oder**
+   - die Feuchte innen unter die Ausschalt-Feuchte fällt, **oder**
    - die Differenz unter den Ausschalt-Puffer fällt, **oder**
    - der Taupunkt außen die Wandtemperatur erreicht.
 7. **Lüfter steht** → einschalten, wenn
    - keine Zwangspause läuft, **und**
-   - die Feuchte innen mindestens der Mindestfeuchte entspricht, **und**
+   - die Feuchte innen mindestens der Einschalt-Feuchte entspricht, **und**
    - die Differenz größer als der Einschalt-Puffer ist, **und**
    - der Taupunkt außen mindestens um den Sicherheitsabstand unter der Wandtemperatur liegt.
 
@@ -230,4 +237,4 @@ Fehler oder Ideen bitte als [Issue](https://github.com/berwil84afk/ha-smart-vent
 
 ## Lizenz
 
-Veröffentlicht unter der [MIT-Lizenz](LICENSE).
+Veröffentlicht unter der [MIT-Lizenz](https://github.com/berwil84afk/ha-smart-ventilation/blob/main/LICENSE).
