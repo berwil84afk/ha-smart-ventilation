@@ -9,13 +9,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/berwil84afk/ha-smart-ventilation" alt="Release">
-  <img src="https://img.shields.io/github/last-commit/berwil84afk/ha-smart-ventilation" alt="Last commit">
-  <img src="https://img.shields.io/github/commit-activity/m/berwil84afk/ha-smart-ventilation" alt="Commit activity">
-  <img src="https://img.shields.io/github/issues/berwil84afk/ha-smart-ventilation" alt="Issues">
-  <img src="https://img.shields.io/badge/dynamic/json?color=41BDF5&logo=home-assistant&label=Active%20installations&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.smart_ventilation_controller.total" alt="Active installations">
+  <picture><img src="https://img.shields.io/github/v/release/berwil84afk/ha-smart-ventilation" alt="Release"></picture>
+  <picture><img src="https://img.shields.io/github/last-commit/berwil84afk/ha-smart-ventilation" alt="Last commit"></picture>
+  <picture><img src="https://img.shields.io/github/commit-activity/m/berwil84afk/ha-smart-ventilation" alt="Commit activity"></picture>
+  <a href="https://github.com/berwil84afk/ha-smart-ventilation/issues"><img src="https://img.shields.io/github/issues/berwil84afk/ha-smart-ventilation" alt="Issues"></a>
+  <picture><img src="https://img.shields.io/badge/dynamic/json?color=41BDF5&logo=home-assistant&label=Active%20installations&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.smart_ventilation_controller.total" alt="Active installations"></picture>
   <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Default-41BDF5.svg" alt="HACS Default"></a>
-  <img src="https://img.shields.io/badge/Home%20Assistant-2024.12%2B-18BCF2.svg" alt="Home Assistant 2024.12+">
+  <picture><img src="https://img.shields.io/badge/Home%20Assistant-2024.12%2B-18BCF2.svg" alt="Home Assistant 2024.12+"></picture>
   <a href="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/validate.yml"><img src="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/tests.yml"><img src="https://github.com/berwil84afk/ha-smart-ventilation/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="https://buymeacoffee.com/berwil84afk"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy me a coffee"></a>
