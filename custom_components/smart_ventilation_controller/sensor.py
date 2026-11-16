@@ -107,6 +107,8 @@ CARD_ATTRIBUTES_UNRECORDED = frozenset(
         "outdoor_humidity", "absolute_humidity_indoor", "absolute_humidity_outdoor", "difference",
         "dew_point_indoor", "dew_point_outdoor", "buffer_on", "buffer_off", "runtime_minutes",
         "pause_until", "night_enabled", "night_start", "night_end", "night_active",
+        "indoor_temperature_entity", "indoor_humidity_entity", "outdoor_temperature_entity",
+        "outdoor_humidity_entity",
     }
 )
 

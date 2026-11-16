@@ -59,6 +59,8 @@ const TEXTS = {
     margin: "Taupunkt-Sicherheitsabstand",
     min_battery: "Mindest-Ladezustand",
     more_options: "Laufzeit, Nachtruhe und Benachrichtigungen in der Integration konfigurieren",
+    restore_defaults: "Standardwerte wiederherstellen",
+    restore_confirm: "Wirklich zurücksetzen? Zum Bestätigen nochmal tippen",
     no_device: "Bitte im Karten-Editor ein Gerät des Smart ventilation controller auswählen.",
     not_found: "Für dieses Gerät wurden keine Entitäten des Smart ventilation controller gefunden.",
     error: "Fehler",
@@ -105,6 +107,8 @@ const TEXTS = {
     margin: "Dew point safety margin",
     min_battery: "Minimum battery level",
     more_options: "Configure runtime, quiet hours and notifications in the integration",
+    restore_defaults: "Restore default values",
+    restore_confirm: "Really reset? Tap again to confirm",
     no_device: "Please select a Smart ventilation controller device in the card editor.",
     not_found: "No Smart ventilation controller entities found for this device.",
     error: "Error",
@@ -265,6 +269,11 @@ const STYLE = `
   .panel label.slider .val { font-weight: 700; }
   .panel input[type="range"] { width: 100%; }
   .panel a { color: var(--primary-color); font-size: 13px; }
+  .panel .restore { margin-top: 4px; height: 40px; border-radius: 20px; border: 1px solid var(--divider-color, rgba(127, 127, 127, 0.4));
+                    background: transparent; color: var(--primary-text-color); font: inherit; font-size: 14px; cursor: pointer; }
+  .panel .restore.confirm { border-color: #F2A33A; color: #F2A33A; }
+  [data-more-info] { cursor: pointer; border-radius: 4px; }
+  [data-more-info]:hover { text-decoration: underline; text-underline-offset: 3px; }
 `;
 
 class SmartVentilationCard extends HTMLElement {
@@ -274,6 +283,7 @@ class SmartVentilationCard extends HTMLElement {
     this._open = false;
     this._dragging = false;
     this._error = null;
+    this._confirmReset = false;
     this._signature = null;
   }
 
@@ -339,6 +349,7 @@ class SmartVentilationCard extends HTMLElement {
       this._config,
       this._open,
       this._error,
+      this._confirmReset,
       language(hass),
       data.name,
       ids.map((id) => [id, hass.states[id]?.state, hass.states[id]?.last_updated]),
@@ -371,15 +382,24 @@ class SmartVentilationCard extends HTMLElement {
     const hass = this._hass;
     const prefix = side === "indoor" ? "indoor" : "outdoor";
     const lines = [
-      [t.rel, `${formatNumber(hass, a[`${prefix}_humidity`], 1)} %`],
+      [t.rel, `${formatNumber(hass, a[`${prefix}_humidity`], 1)} %`, a[`${prefix}_humidity_entity`]],
     ];
     if (this._config.show_absolute_humidity) {
-      lines.push([t.abs, `${formatNumber(hass, a[`absolute_humidity_${prefix}`], 2)} g/m³`]);
+      lines.push([t.abs, `${formatNumber(hass, a[`absolute_humidity_${prefix}`], 2)} g/m³`, data.entities[`ah_${prefix}`]]);
     }
     if (this._config.show_dew_points) {
-      lines.push([t.dew, `${formatNumber(hass, a[`dew_point_${prefix}`], 1)} °C`]);
+      lines.push([t.dew, `${formatNumber(hass, a[`dew_point_${prefix}`], 1)} °C`, data.entities[`dew_point_${prefix}`]]);
     }
-    return { temperature: `${formatNumber(hass, a[`${prefix}_temperature`], 1)} °C`, lines };
+    return {
+      temperature: `${formatNumber(hass, a[`${prefix}_temperature`], 1)} °C`,
+      temperatureEntity: a[`${prefix}_temperature_entity`],
+      lines,
+    };
+  }
+
+  /** Attribut, mit dem ein Klick den Verlauf dieses Sensors öffnet. */
+  _history(entityId) {
+    return entityId ? ` data-more-info="${escapeHtml(entityId)}"` : "";
   }
 
   _statusDot(data) {
@@ -403,7 +423,9 @@ class SmartVentilationCard extends HTMLElement {
       const v = this._valueLines(data, t, side);
       const caption = side === "indoor" ? t.indoor : t.outdoor;
       return `<div class="overlay block ${cls}"><span class="caption">${escapeHtml(caption)}</span>
-        <span>${escapeHtml(v.temperature)}</span>${v.lines.map(([, value]) => `<span>${escapeHtml(value)}</span>`).join("")}</div>`;
+        <span${this._history(v.temperatureEntity)}>${escapeHtml(v.temperature)}</span>${v.lines
+          .map(([, value, entityId]) => `<span${this._history(entityId)}>${escapeHtml(value)}</span>`)
+          .join("")}</div>`;
     };
     const panel = this._open && this._config.allow_settings ? this._renderPanel(data, t) : "";
     const bar = this._config.show_difference_bar ? this._renderDifferenceBar(data, t) : "";
@@ -411,7 +433,7 @@ class SmartVentilationCard extends HTMLElement {
       <div class="scene clickable" data-action="tap">
         <img src="${escapeHtml(image)}" alt="" style="filter:${filter}">
         <div class="overlay chip name">${fanSvg(16, fanColor)}<span>${escapeHtml(data.name)}</span></div>
-        <div class="overlay badge">Δ ${escapeHtml(formatNumber(hass, a.difference, 1))} g/m³</div>
+        <div class="overlay badge"${this._history(data.entities.ah_difference)}>Δ ${escapeHtml(formatNumber(hass, a.difference, 1))} g/m³</div>
         ${block("indoor", "indoor")}
         ${block("outdoor", "outdoor")}
         <div class="statusbar">${this._statusDot(data)}<span class="text">${escapeHtml(this._statusText(data.status))}</span>${this._gearButton(t)}</div>
@@ -427,8 +449,10 @@ class SmartVentilationCard extends HTMLElement {
     const tile = (side) => {
       const v = this._valueLines(data, t, side);
       return `<div class="tile"><span class="caption">${escapeHtml(side === "indoor" ? t.indoor : t.outdoor)}</span>
-        <span class="big">${escapeHtml(v.temperature)}</span>
-        ${v.lines.map(([label, value]) => `<div class="row"><span class="label">${escapeHtml(label)}</span><span>${escapeHtml(value)}</span></div>`).join("")}</div>`;
+        <span class="big"${this._history(v.temperatureEntity)}>${escapeHtml(v.temperature)}</span>
+        ${v.lines
+          .map(([label, value, entityId]) => `<div class="row"><span class="label">${escapeHtml(label)}</span><span${this._history(entityId)}>${escapeHtml(value)}</span></div>`)
+          .join("")}</div>`;
     };
     const automatic = data.entities.automatic
       ? `<label class="switch">${escapeHtml(t.automatic)}<input type="checkbox" data-action="automatic" ${hass.states[data.entities.automatic]?.state === "on" ? "checked" : ""}></label>`
@@ -469,8 +493,8 @@ class SmartVentilationCard extends HTMLElement {
       <div class="mini clickable" data-action="tap">
         <div class="fan" style="background:${fanBg}">${fanSvg(22, fanColor)}</div>
         <div class="title"><span class="name-text">${escapeHtml(data.name)}</span><span class="status">${escapeHtml(status)}</span></div>
-        <div class="delta"><span class="value">Δ ${escapeHtml(formatNumber(hass, a.difference, 1))}</span>
-          <span class="sub">g/m³ · ${escapeHtml(formatNumber(hass, a.indoor_humidity, 1))} % ${escapeHtml(t.indoor.toLowerCase())}</span></div>
+        <div class="delta"><span class="value"${this._history(data.entities.ah_difference)}>Δ ${escapeHtml(formatNumber(hass, a.difference, 1))}</span>
+          <span class="sub"${this._history(a.indoor_humidity_entity)}>g/m³ · ${escapeHtml(formatNumber(hass, a.indoor_humidity, 1))} % ${escapeHtml(t.indoor.toLowerCase())}</span></div>
       </div>`;
   }
 
@@ -485,7 +509,7 @@ class SmartVentilationCard extends HTMLElement {
     return `
       <div class="diff">
         <div class="row"><span class="label">${escapeHtml(t.difference)}</span>
-          <span class="value">${escapeHtml(formatNumber(hass, a.difference, 1))} g/m³</span></div>
+          <span class="value"${this._history(data.entities.ah_difference)}>${escapeHtml(formatNumber(hass, a.difference, 1))} g/m³</span></div>
         <div class="bar">
           <div class="fill" style="width:${Number.isNaN(diff) ? "0%" : pct(diff)}"></div>
           <div class="mark" style="left:${pct(bufferOff)};background:#F2A33A"></div>
@@ -525,6 +549,10 @@ class SmartVentilationCard extends HTMLElement {
           style="accent-color:${setting.color}"></label>`);
     }
     parts.push(`<a href="${INTEGRATION_PAGE}" data-action="integration">${escapeHtml(t.more_options)}</a>`);
+    if (data.entities.restore_defaults) {
+      const label = this._confirmReset ? t.restore_confirm : t.restore_defaults;
+      parts.push(`<button type="button" class="restore${this._confirmReset ? " confirm" : ""}" data-action="restore">${escapeHtml(label)}</button>`);
+    }
     return `<div class="panel">${parts.join("")}</div>`;
   }
 
@@ -540,7 +568,7 @@ class SmartVentilationCard extends HTMLElement {
     const root = this.shadowRoot;
     root.querySelectorAll('[data-action="tap"]').forEach((el) =>
       el.addEventListener("click", (ev) => {
-        if (ev.target.closest("button, input, a")) return;
+        if (ev.target.closest("button, input, a, [data-more-info]")) return;
         this._tap(data);
       })
     );
@@ -555,6 +583,18 @@ class SmartVentilationCard extends HTMLElement {
       el.addEventListener("change", (ev) => {
         ev.stopPropagation();
         this._toggleAutomatic(data);
+      })
+    );
+    root.querySelectorAll("[data-more-info]").forEach((el) =>
+      el.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        fireEvent(this, "hass-more-info", { entityId: el.dataset.moreInfo });
+      })
+    );
+    root.querySelectorAll('[data-action="restore"]').forEach((el) =>
+      el.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        this._restoreDefaults(data);
       })
     );
     root.querySelectorAll('[data-action="integration"]').forEach((el) =>
@@ -591,6 +631,23 @@ class SmartVentilationCard extends HTMLElement {
     if (!entityId) return;
     const on = this._hass.states[entityId]?.state === "on";
     await this._call("switch", on ? "turn_off" : "turn_on", { entity_id: entityId });
+  }
+
+  async _restoreDefaults(data) {
+    // Erster Klick fragt nach, der zweite setzt zurück; die Nachfrage verfällt nach 4 Sekunden
+    if (!this._confirmReset) {
+      this._confirmReset = true;
+      this._render();
+      clearTimeout(this._confirmTimer);
+      this._confirmTimer = setTimeout(() => {
+        this._confirmReset = false;
+        this._render();
+      }, 4000);
+      return;
+    }
+    clearTimeout(this._confirmTimer);
+    this._confirmReset = false;
+    await this._call("button", "press", { entity_id: data.entities.restore_defaults });
   }
 
   async _setNumber(entityId, value) {

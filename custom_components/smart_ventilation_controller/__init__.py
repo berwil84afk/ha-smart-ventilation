@@ -15,7 +15,13 @@ from homeassistant.loader import async_get_integration
 from .const import DOMAIN, NUM_MIN_BATTERY
 from .controller import SmartVentilationConfigEntry, SmartVentilationController
 
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SENSOR, Platform.SWITCH]
+PLATFORMS = [
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SENSOR,
+    Platform.SWITCH,
+]
 
 # Entitäten, die es nur bei Batteriebetrieb gibt
 BATTERY_ENTITIES = [(Platform.NUMBER, NUM_MIN_BATTERY), (Platform.BINARY_SENSOR, "battery_low")]

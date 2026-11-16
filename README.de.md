@@ -158,6 +158,7 @@ Die Namen der Entitäten folgen der Sprache von Home Assistant (Deutsch oder Eng
 | `binary_sensor.keller_kondensationsgefahr` | An, wenn Lüften zu Kondenswasser führen könnte |
 | `binary_sensor.keller_nachtruhe` | An, während die Nachtruhe aktiv ist |
 | `binary_sensor.keller_zwangspause` | An, während der Zwangspause |
+| `button.keller_standardwerte_wiederherstellen` | Setzt alle Schwellwerte auf die Standardwerte zurück |
 | `switch.keller_automatik` | Steuerung an/aus; beim Ausschalten bleibt der Lüfter im aktuellen Zustand |
 | `binary_sensor.keller_ladezustand_zu_niedrig` | Nur bei Batterie: an, solange der Ladezustand das Lüften sperrt |
 | `number.keller_…` | Die Schwellwerte (siehe oben); „Mindest-Ladezustand“ nur bei Batterie |
@@ -205,7 +206,9 @@ Die Integration bringt eine eigene Karte mit. Sie wird automatisch im Frontend a
 
 Optionen im Karten-Editor: absolute Feuchte, Taupunkte, Differenz-Balken mit Schaltschwellen, Graufilter, eigenes Hintergrundbild und was beim Tippen passiert.
 
-Über das Zahnrad lassen sich **Einstellungen direkt in der Karte** ändern: Automatik, Ein-/Ausschalt-Feuchte, beide Puffer und der Taupunkt-Abstand (bei Batterie auch der Mindest-Ladezustand). Laufzeit, Nachtruhe und Benachrichtigungen bleiben unter *Konfigurieren* der Integration; die Karte verlinkt dorthin.
+Ein Klick auf einen Wert (Temperatur, Feuchte, absolute Feuchte, Taupunkt, Differenz) öffnet den **Verlauf** dieses Sensors.
+
+Über das Zahnrad lassen sich **Einstellungen direkt in der Karte** ändern: Automatik, Ein-/Ausschalt-Feuchte, beide Puffer und der Taupunkt-Abstand (bei Batterie auch der Mindest-Ladezustand). Ganz unten setzt **„Standardwerte wiederherstellen“** alle Schwellwerte zurück (mit Nachfrage). Laufzeit, Nachtruhe und Benachrichtigungen bleiben unter *Konfigurieren* der Integration; die Karte verlinkt dorthin.
 
 Als YAML:
 

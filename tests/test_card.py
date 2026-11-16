@@ -71,11 +71,58 @@ class CardAttributeTests(Base):
         self.assertFalse(a["night_active"])
         self.assertEqual(a["pause_until"], (NOON + dt.timedelta(minutes=60)).isoformat())
 
+    async def test_source_entities_for_history(self):
+        a = make_controller(self.hass).card_attributes()
+        self.assertEqual(a["indoor_temperature_entity"], "sensor.in_t")
+        self.assertEqual(a["indoor_humidity_entity"], "sensor.in_h")
+        self.assertEqual(a["outdoor_temperature_entity"], "sensor.out_t")
+        self.assertEqual(a["outdoor_humidity_entity"], "sensor.out_h")
+
     async def test_attributes_are_json_serialisable(self):
         set_climate(self.hass, *WINTER)
         c = make_controller(self.hass)
         await c.async_evaluate()
         json.dumps(c.card_attributes())
+
+
+class RestoreDefaultsTests(Base):
+    async def test_restores_all_thresholds_at_once(self):
+        c = make_controller(self.hass)
+        await c.async_set_value("min_humidity", 65)
+        await c.async_set_value("min_humidity_off", 60)
+        await c.async_set_value("buffer_off", 0.5)
+        await c.async_set_value("buffer_on", 3.5)
+        await c.async_set_value("dewpoint_margin", 4.0)
+        await c.async_set_value("min_battery", 40)
+        await c.async_restore_defaults()
+        self.assertEqual(
+            c.values,
+            {
+                "buffer_on": 2.5,
+                "buffer_off": 1.0,
+                "dewpoint_margin": 2.0,
+                "min_humidity": 55.0,
+                "min_humidity_off": 55.0,
+                "min_battery": 20.0,
+            },
+        )
+        self.assertEqual(c._store.saved["values"]["min_humidity_off"], 55.0)
+
+    async def test_restore_works_where_single_steps_would_be_rejected(self):
+        # Ein-Feuchte 70 / Aus 68: nacheinander gesetzt würde 55 für "ein" abgelehnt (68 > 55)
+        c = make_controller(self.hass)
+        await c.async_set_value("min_humidity", 70)
+        await c.async_set_value("min_humidity_off", 68)
+        await c.async_restore_defaults()
+        self.assertEqual((c.values["min_humidity"], c.values["min_humidity_off"]), (55.0, 55.0))
+
+    async def test_restore_triggers_evaluation(self):
+        set_climate(self.hass, *WINTER)
+        c = make_controller(self.hass)
+        await c.async_set_value("min_humidity", 80)
+        self.hass.services.calls.clear()
+        await c.async_restore_defaults()
+        self.assertEqual(self.hass.services.switch_calls(), [("turn_on", ["switch.fan"])])
 
 
 class FrontendTests(unittest.IsolatedAsyncioTestCase):

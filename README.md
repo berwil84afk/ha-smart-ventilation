@@ -158,6 +158,7 @@ Entity names follow the Home Assistant language (English or German). Example for
 | `binary_sensor.basement_condensation_risk` | On when ventilating could cause condensation |
 | `binary_sensor.basement_quiet_hours` | On while quiet hours are active |
 | `binary_sensor.basement_forced_pause` | On during the forced pause |
+| `button.basement_restore_default_values` | Resets all thresholds to their defaults |
 | `switch.basement_automatic_mode` | Control on/off; when switched off, the fan keeps its current state |
 | `binary_sensor.basement_battery_level_too_low` | Battery only: on while the battery level blocks ventilation |
 | `number.basement_…` | The thresholds (see above); "Minimum battery level" for battery only |
@@ -205,7 +206,9 @@ The integration ships its own card. It is registered in the frontend automatical
 
 Options in the card editor: absolute humidity, dew points, difference bar with switching thresholds, gray filter, custom background image and what a tap does.
 
-The gear icon opens **settings directly in the card**: automatic mode, turn-on/turn-off humidity, both buffers and the dew point margin (with a battery also the minimum battery level). Runtime, quiet hours and notifications stay under the integration's *Configure*; the card links there.
+Clicking a value (temperature, humidity, absolute humidity, dew point, difference) opens the **history** of that sensor.
+
+The gear icon opens **settings directly in the card**: automatic mode, turn-on/turn-off humidity, both buffers and the dew point margin (with a battery also the minimum battery level). At the bottom, **"Restore default values"** resets all thresholds (with confirmation). Runtime, quiet hours and notifications stay under the integration's *Configure*; the card links there.
 
 As YAML:
 

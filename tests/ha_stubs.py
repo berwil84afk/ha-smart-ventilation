@@ -19,6 +19,7 @@ def _module(name: str, **attrs) -> types.ModuleType:
 
 class Platform:
     BINARY_SENSOR = "binary_sensor"
+    BUTTON = "button"
     NUMBER = "number"
     SENSOR = "sensor"
     SWITCH = "switch"

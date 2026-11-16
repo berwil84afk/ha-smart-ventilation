@@ -235,6 +235,13 @@ class SmartVentilationController:
         self._save()
         await self.async_evaluate()
 
+    async def async_restore_defaults(self) -> None:
+        """Alle Schwellwerte auf die Standardwerte zurücksetzen."""
+        self.values = dict(DEFAULT_VALUES)
+        self.values[NUM_MIN_HUMIDITY_OFF] = self.values[NUM_MIN_HUMIDITY]
+        self._save()
+        await self.async_evaluate()
+
     async def async_set_automatic(self, enabled: bool) -> None:
         self.automatic = enabled
         self._save()
@@ -523,6 +530,11 @@ class SmartVentilationController:
             "night_start": str(self.config[CONF_NIGHT_START])[:5],
             "night_end": str(self.config[CONF_NIGHT_END])[:5],
             "night_active": self.night_active,
+            # Quell-Sensoren, damit die Karte deren Verlauf öffnen kann
+            "indoor_temperature_entity": self.config[CONF_INDOOR_TEMP],
+            "indoor_humidity_entity": self.config[CONF_INDOOR_HUM],
+            "outdoor_temperature_entity": self.config[CONF_OUTDOOR_TEMP],
+            "outdoor_humidity_entity": self.config[CONF_OUTDOOR_HUM],
         }
 
     def _t(self, key: str, **kwargs: Any) -> str:

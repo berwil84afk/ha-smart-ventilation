@@ -164,6 +164,11 @@
       "automatic": {
         "name": "Automatic mode"
       }
+    },
+    "button": {
+      "restore_defaults": {
+        "name": "Restore default values"
+      }
     }
   },
   "exceptions": {
