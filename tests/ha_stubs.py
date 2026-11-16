@@ -231,4 +231,33 @@ _cfg.OptionsFlow = OptionsFlow
 _cfg.ConfigFlowResult = dict
 sys.modules["homeassistant.const"].CONF_NAME = "name"
 
+# --- Frontend-Anmeldung der Karte (__init__.py) -------------------------------------
+
+frontend_calls: list = []
+
+
+class StaticPathConfig:
+    def __init__(self, url_path, path, cache_headers=True):
+        self.url_path, self.path, self.cache_headers = url_path, path, cache_headers
+
+
+class _Integration:
+    version = "9.9.9"
+
+
+async def _async_get_integration(hass, domain):
+    return _Integration()
+
+
+_module("homeassistant.components")
+_module("homeassistant.components.frontend", add_extra_js_url=lambda hass, url: frontend_calls.append(url))
+_module("homeassistant.components.http", StaticPathConfig=StaticPathConfig)
+_module(
+    "homeassistant.helpers.config_validation",
+    config_entry_only_config_schema=lambda domain: ("config_entry_only", domain),
+)
+sys.modules["homeassistant.helpers"].config_validation = sys.modules["homeassistant.helpers.config_validation"]
+_module("homeassistant.helpers.typing", ConfigType=dict, StateType=object)
+_module("homeassistant.loader", async_get_integration=_async_get_integration)
+
 clock = _Clock

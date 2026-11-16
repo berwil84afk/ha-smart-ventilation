@@ -66,6 +66,7 @@ The Smart ventilation controller does exactly this calculation around the clock 
 - **Makes the values visible:** Absolute humidity indoor and outdoor, the difference, dew points, runtime and a readable status are available as sensors with history.
 - **Notifies on request:** Via notify entities (e.g. Telegram) or legacy notify services (e.g. the Companion app), selectable per event.
 - **Entirely in the UI:** No YAML, no helpers, no templates. Set up as many rooms as you like, each independently.
+- **Own dashboard card:** image, values or mini layout, settings directly in the card.
 
 ## Requirements
 
@@ -190,9 +191,42 @@ The integration evaluates on every sensor change and additionally once a minute,
 
 Absolute humidity and dew point are calculated with the Magnus formula. Temperatures in °F or K are converted automatically.
 
+## Dashboard card
+
+The integration ships its own card. It is registered in the frontend automatically, no extra HACS frontend install or resource is needed.
+
+*Edit dashboard → Add card → "Smart ventilation controller"*, then pick the device in the editor. The card finds all sensors of that device by itself.
+
+| Layout | Content |
+|---|---|
+| **Image** (default) | Basement wall with fan as background, indoor and outdoor values, difference on the duct, status bar; the image turns gray while the fan is off |
+| **Values** | Two tiles indoor/outdoor, automatic switch, hints for quiet hours, runtime and pause |
+| **Mini** | One line with fan, status and difference |
+
+Options in the card editor: absolute humidity, dew points, difference bar with switching thresholds, gray filter, custom background image and what a tap does.
+
+The gear icon opens **settings directly in the card**: automatic mode, turn-on/turn-off humidity, both buffers and the dew point margin (with a battery also the minimum battery level). Runtime, quiet hours and notifications stay under the integration's *Configure*; the card links there.
+
+As YAML:
+
+```yaml
+type: custom:smart-ventilation-card
+device: <device id>
+layout: image          # image | values | mini
+show_absolute_humidity: true
+show_dew_points: false
+show_difference_bar: true
+gray_when_off: true
+allow_settings: true
+tap: more-info         # more-info | toggle_automatic | none
+# image: /local/my-image.png
+```
+
+The card's values are attributes of the status sensor. They are not stored in the history.
+
 ## Examples
 
-### Dashboard card
+### Simple entities card
 
 ```yaml
 type: entities

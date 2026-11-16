@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import config_validation as cv, entity_registry as er
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN, NUM_MIN_BATTERY
 from .controller import SmartVentilationConfigEntry, SmartVentilationController
@@ -13,6 +19,22 @@ PLATFORMS = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SENSOR, Platform.
 
 # Entitäten, die es nur bei Batteriebetrieb gibt
 BATTERY_ENTITIES = [(Platform.NUMBER, NUM_MIN_BATTERY), (Platform.BINARY_SENSOR, "battery_low")]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+# Dashboard-Karte und Standardbild werden von der Integration selbst ausgeliefert
+FRONTEND_URL = f"/{DOMAIN}"
+CARD_FILE = "smart-ventilation-card.js"
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Karte einmalig im Frontend anmelden; die Version im Pfad umgeht den Browser-Cache."""
+    integration = await async_get_integration(hass, DOMAIN)
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(FRONTEND_URL, str(Path(__file__).parent / "www"), True)]
+    )
+    add_extra_js_url(hass, f"{FRONTEND_URL}/{CARD_FILE}?v={integration.version}")
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: SmartVentilationConfigEntry) -> bool:

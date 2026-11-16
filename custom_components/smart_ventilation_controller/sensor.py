@@ -86,7 +86,7 @@ SENSORS: tuple[SmartVentilationSensorDescription, ...] = (
         translation_key="status",
         icon="mdi:fan-alert",
         value_fn=lambda c: c.status,
-        attrs_fn=lambda c: {"code": c.status_code},
+        attrs_fn=lambda c: c.card_attributes(),
     ),
 )
 
@@ -100,7 +100,19 @@ async def async_setup_entry(
     async_add_entities(SmartVentilationSensor(controller, description) for description in SENSORS)
 
 
+# Kartendaten ändern sich jede Minute; nur der Status-Code kommt in den Verlauf
+CARD_ATTRIBUTES_UNRECORDED = frozenset(
+    {
+        "fan_on", "automatic", "indoor_temperature", "indoor_humidity", "outdoor_temperature",
+        "outdoor_humidity", "absolute_humidity_indoor", "absolute_humidity_outdoor", "difference",
+        "dew_point_indoor", "dew_point_outdoor", "buffer_on", "buffer_off", "runtime_minutes",
+        "pause_until", "night_enabled", "night_start", "night_end", "night_active",
+    }
+)
+
+
 class SmartVentilationSensor(SmartVentilationEntity, SensorEntity):
+    _unrecorded_attributes = CARD_ATTRIBUTES_UNRECORDED
     entity_description: SmartVentilationSensorDescription
 
     @property

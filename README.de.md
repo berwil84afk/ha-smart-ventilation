@@ -66,6 +66,7 @@ Genau diese Rechnung übernimmt der Smart ventilation controller, rund um die Uh
 - **Macht die Werte sichtbar:** Absolute Feuchte innen und außen, Differenz, Taupunkte, Laufzeit und ein verständlicher Statustext stehen als Sensoren mit Verlauf zur Verfügung.
 - **Benachrichtigt auf Wunsch:** Über Notify-Entitäten (z. B. Telegram) oder klassische Notify-Dienste (z. B. Companion App), pro Ereignis wählbar.
 - **Komplett über die Oberfläche:** Kein YAML, keine Helfer, keine Vorlagen. Mehrere Räume lassen sich unabhängig voneinander einrichten.
+- **Eigene Dashboard-Karte:** Bild-, Werte- oder Mini-Ansicht, Einstellungen direkt in der Karte.
 
 ## Was du brauchst
 
@@ -190,9 +191,42 @@ Die Integration wertet bei jeder Änderung der Sensoren und zusätzlich jede Min
 
 Die absolute Feuchte und der Taupunkt werden mit der Magnus-Formel berechnet. Temperaturen in °F oder K werden automatisch umgerechnet.
 
+## Dashboard-Karte
+
+Die Integration bringt eine eigene Karte mit. Sie wird automatisch im Frontend angemeldet, eine Installation über HACS-Frontend oder Ressourcen ist nicht nötig.
+
+*Dashboard bearbeiten → Karte hinzufügen → „Smart ventilation controller“*, dann im Editor das Gerät wählen. Die Karte findet alle Sensoren dieses Geräts selbst.
+
+| Darstellung | Inhalt |
+|---|---|
+| **Bild** (Standard) | Kellerwand mit Lüfter als Hintergrund, Werte innen und außen, Differenz auf dem Rohr, Statusleiste; das Bild wird grau, wenn der Lüfter steht |
+| **Werte** | Zwei Kacheln innen/außen, Automatik-Schalter, Hinweise zu Nachtruhe, Laufzeit und Pause |
+| **Mini** | Eine Zeile mit Lüfter, Status und Differenz |
+
+Optionen im Karten-Editor: absolute Feuchte, Taupunkte, Differenz-Balken mit Schaltschwellen, Graufilter, eigenes Hintergrundbild und was beim Tippen passiert.
+
+Über das Zahnrad lassen sich **Einstellungen direkt in der Karte** ändern: Automatik, Ein-/Ausschalt-Feuchte, beide Puffer und der Taupunkt-Abstand (bei Batterie auch der Mindest-Ladezustand). Laufzeit, Nachtruhe und Benachrichtigungen bleiben unter *Konfigurieren* der Integration; die Karte verlinkt dorthin.
+
+Als YAML:
+
+```yaml
+type: custom:smart-ventilation-card
+device: <Geräte-ID>
+layout: image          # image | values | mini
+show_absolute_humidity: true
+show_dew_points: false
+show_difference_bar: true
+gray_when_off: true
+allow_settings: true
+tap: more-info         # more-info | toggle_automatic | none
+# image: /local/eigenes-bild.png
+```
+
+Die Messwerte für die Karte stehen als Attribute am Status-Sensor. Sie werden nicht im Verlauf gespeichert.
+
 ## Beispiele
 
-### Dashboard-Karte
+### Einfache Entitäten-Karte
 
 ```yaml
 type: entities

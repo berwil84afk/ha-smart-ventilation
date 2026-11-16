@@ -145,6 +145,7 @@ class SmartVentilationController:
         self.ventilation_useful = False
         self.condensation_risk = False
         self.night_active = False
+        self.fan_on = False
         self.battery_level: float | None = None
         self.battery_blocked = False
         self._store: Store[dict[str, Any]] = Store(
@@ -272,6 +273,7 @@ class SmartVentilationController:
             running = [state for state in fan_states if state.state == STATE_ON]
             fan_available = bool(fan_states)
             fan_on = bool(running)
+            self.fan_on = fan_on
             self.runtime = now - min(state.last_changed for state in running) if running else None
 
             self.night_active = self._in_night_window(now.time())
@@ -492,6 +494,36 @@ class SmartVentilationController:
         # 0 % (z. B. hp2000-Aussetzer) und unplausible Werte gelten als ungültig
         value = self._read_float(entity_id)
         return value if value is not None and 0 < value <= 100 else None
+
+    def card_attributes(self) -> dict[str, Any]:
+        """Messwerte und Einstellungen für die Dashboard-Karte (Attribute des Status-Sensors)."""
+        r = self.readings
+
+        def rounded(value: float | None, digits: int) -> float | None:
+            return None if value is None else round(value, digits)
+
+        return {
+            "code": self.status_code,
+            "fan_on": self.fan_on,
+            "automatic": self.automatic,
+            "indoor_temperature": rounded(r and r.indoor_temp, 1),
+            "indoor_humidity": rounded(r and r.indoor_rh, 1),
+            "outdoor_temperature": rounded(r and r.outdoor_temp, 1),
+            "outdoor_humidity": rounded(r and r.outdoor_rh, 1),
+            "absolute_humidity_indoor": rounded(r and r.ah_indoor, 2),
+            "absolute_humidity_outdoor": rounded(r and r.ah_outdoor, 2),
+            "difference": rounded(r and r.difference, 2),
+            "dew_point_indoor": rounded(r and r.dew_point_indoor, 1),
+            "dew_point_outdoor": rounded(r and r.dew_point_outdoor, 1),
+            "buffer_on": self.values[NUM_BUFFER_ON],
+            "buffer_off": self.values[NUM_BUFFER_OFF],
+            "runtime_minutes": round(self.runtime.total_seconds() / 60) if self.runtime else 0,
+            "pause_until": self.pause_until.isoformat() if self.pause_until else None,
+            "night_enabled": bool(self.config[CONF_NIGHT_ENABLED]),
+            "night_start": str(self.config[CONF_NIGHT_START])[:5],
+            "night_end": str(self.config[CONF_NIGHT_END])[:5],
+            "night_active": self.night_active,
+        }
 
     def _t(self, key: str, **kwargs: Any) -> str:
         """Text in der aktuellen Systemsprache von Home Assistant."""
